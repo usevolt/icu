@@ -1,9 +1,4 @@
-EESchema Schematic File Version 2
-LIBS:kemet
-LIBS:usevolt
-LIBS:wurth_elektronik_LED
-LIBS:power
-LIBS:yageo
+EESchema Schematic File Version 4
 LIBS:icu-cache
 EELAYER 26 0
 EELAYER END
@@ -22,7 +17,7 @@ $EndDescr
 Text HLabel 1350 3850 0    60   Input ~ 0
 VIN
 $Comp
-L FUSE_MC36211_350MA F201
+L icu-rescue:FUSE_MC36211_350MA F201
 U 1 1 57B8204F
 P 2500 3850
 F 0 "F201" H 2500 4054 45  0000 C CNN
@@ -37,7 +32,7 @@ F 7 "Multicomp" H 2720 3970 60  0001 C CNN "Manufacturer"
 	1    0    0    -1  
 $EndComp
 $Comp
-L DIODE_TVS_SMBJ33A-TRDO-214AA D204
+L icu-rescue:DIODE_TVS_SMBJ33A-TRDO-214AA D204
 U 1 1 57B820C1
 P 2800 4050
 F 0 "D204" V 2892 3982 45  0000 R CNN
@@ -52,7 +47,7 @@ F 7 "SMBJ33ALFCT-ND" H 3310 4460 60  0001 C CNN "1st Source Part Number"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L 100nF C201
+L icu-rescue:100nF C201
 U 1 1 57B8217A
 P 3400 3950
 F 0 "C201" V 3408 4023 45  0000 L CNN
@@ -67,7 +62,7 @@ F 7 "KEMET" H 3404 4059 60  0001 C CNN "Manufacturer"
 	0    1    1    0   
 $EndComp
 $Comp
-L LM2671SOIC8 VR?
+L icu-rescue:LM2671SOIC8 VR?
 U 1 1 57B82261
 P 4850 4150
 AR Path="/57B82261" Ref="VR?"  Part="1" 
@@ -86,7 +81,7 @@ F 9 "TEXAS INSTRUMENTS" H 4750 4770 60  0001 C CNN "Manufacturer"
 	1    0    0    -1  
 $EndComp
 $Comp
-L 10nF C203
+L icu-rescue:10nF C203
 U 1 1 57B822C5
 P 5800 3950
 F 0 "C203" H 5850 4149 45  0000 C CNN
@@ -101,7 +96,7 @@ F 7 "KEMET" H 5804 4059 60  0001 C CNN "Manufacturer"
 	1    0    0    -1  
 $EndComp
 $Comp
-L DIODE_RS07J-GS18 D206
+L icu-rescue:DIODE_RS07J-GS18 D206
 U 1 1 57B82329
 P 6200 3950
 F 0 "D206" V 6150 3852 45  0000 R CNN
@@ -118,7 +113,7 @@ F 9 "Vishay Semiconductor Diodes Division" H 6320 4070 60  0001 C CNN "Manufactu
 	0    -1   -1   0   
 $EndComp
 $Comp
-L 100nF C205
+L icu-rescue:100nF C205
 U 1 1 57B82A3F
 P 8600 3950
 F 0 "C205" V 8608 4023 45  0000 L CNN
@@ -133,7 +128,7 @@ F 7 "KEMET" H 8604 4059 60  0001 C CNN "Manufacturer"
 	0    1    1    0   
 $EndComp
 $Comp
-L +5V #PWR05
+L icu-rescue:+5V #PWR05
 U 1 1 57B831F8
 P 6850 3600
 F 0 "#PWR05" H 6850 3450 50  0001 C CNN
@@ -144,7 +139,7 @@ F 3 "" H 6850 3600 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L +3V3 #PWR06
+L icu-rescue:+3V3 #PWR06
 U 1 1 57B83259
 P 8600 3600
 F 0 "#PWR06" H 8600 3450 50  0001 C CNN
@@ -166,7 +161,7 @@ NoConn ~ 4550 3850
 NoConn ~ 4550 3950
 NoConn ~ 4550 4050
 $Comp
-L VDD #PWR07
+L icu-rescue:VDD #PWR07
 U 1 1 57B9C56A
 P 3800 2100
 F 0 "#PWR07" H 3800 1950 50  0001 C CNN
@@ -177,7 +172,7 @@ F 3 "" H 3800 2100 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L PWR_FLAG #FLG08
+L icu-rescue:PWR_FLAG #FLG08
 U 1 1 57B9C59C
 P 3800 2300
 F 0 "#FLG08" H 3800 2395 50  0001 C CNN
@@ -188,7 +183,7 @@ F 3 "" H 3800 2300 50  0000 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L GND #PWR09
+L icu-rescue:GND #PWR09
 U 1 1 57B9D351
 P 4300 2350
 F 0 "#PWR09" H 4300 2100 50  0001 C CNN
@@ -199,7 +194,7 @@ F 3 "" H 4300 2350 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L PWR_FLAG #FLG010
+L icu-rescue:PWR_FLAG #FLG010
 U 1 1 57B9D3A1
 P 4300 2150
 F 0 "#FLG010" H 4300 2245 50  0001 C CNN
@@ -210,7 +205,7 @@ F 3 "" H 4300 2150 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR011
+L icu-rescue:GND #PWR011
 U 1 1 57CF1F5E
 P 2800 5150
 F 0 "#PWR011" H 2800 4900 50  0001 C CNN
@@ -221,7 +216,7 @@ F 3 "" H 2800 5150 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L IND_744045210 L201
+L icu-rescue:IND_744045210 L201
 U 1 1 58945E39
 P 6500 3850
 F 0 "L201" H 6500 4041 45  0000 C CNN
@@ -238,7 +233,7 @@ F 9 "732-3072-1-ND" H 7000 4390 60  0001 C CNN "2nd Source Part Number"
 	1    0    0    -1  
 $EndComp
 $Comp
-L DIODE_RS07J-GS18 D201
+L icu-rescue:DIODE_RS07J-GS18 D201
 U 1 1 5896E2A2
 P 1900 3850
 F 0 "D201" H 1850 3990 45  0000 C CNN
@@ -255,7 +250,7 @@ F 9 "Vishay Semiconductor Diodes Division" H 2020 3970 60  0001 C CNN "Manufactu
 	1    0    0    -1  
 $EndComp
 $Comp
-L T491D226K035AT C204
+L icu-rescue:T491D226K035AT C204
 U 1 1 597AF606
 P 6850 4050
 F 0 "C204" V 6758 4153 45  0000 L CNN
@@ -272,7 +267,7 @@ F 9 "1457504" H 7250 4390 60  0001 C CNN "1st Source Part Number"
 	0    1    1    0   
 $EndComp
 $Comp
-L REG_MCP1700 VR202
+L icu-rescue:REG_MCP1700 VR202
 U 1 1 597AF83E
 P 8000 3950
 F 0 "VR202" H 8000 4305 45  0000 C CNN
@@ -289,7 +284,7 @@ F 9 "MICROCHIP" H 7800 4370 60  0001 C CNN "Manufacturer"
 	1    0    0    -1  
 $EndComp
 $Comp
-L SCHOTTKY_DIODE_V40PW10C D203
+L icu-rescue:SCHOTTKY_DIODE_V40PW10C D203
 U 1 1 59B7B8B2
 P 2050 3250
 F 0 "D203" H 2050 3597 60  0000 C CNN
@@ -306,7 +301,7 @@ F 9 "VISHAY" H 2100 3550 60  0001 C CNN "Manufacturer"
 	1    0    0    -1  
 $EndComp
 $Comp
-L SCHOTTKY_DIODE_V40PW10C D202
+L icu-rescue:SCHOTTKY_DIODE_V40PW10C D202
 U 1 1 59D9089A
 P 2050 2750
 F 0 "D202" H 2050 3097 60  0000 C CNN
@@ -323,7 +318,7 @@ F 9 "VISHAY" H 2100 3050 60  0001 C CNN "Manufacturer"
 	1    0    0    -1  
 $EndComp
 $Comp
-L CAP_EEE-FK1H470P C202
+L icu-rescue:CAP_EEE-FK1H470P C202
 U 1 1 5A13B69C
 P 3800 4050
 F 0 "C202" V 3708 4153 45  0000 L CNN
@@ -340,7 +335,7 @@ F 9 "PCE3815CT-ND" H 4200 4390 60  0001 C CNN "1st Source Part Number"
 	0    1    1    0   
 $EndComp
 $Comp
-L DIODE_TVS_TPSMD28A D205
+L icu-rescue:DIODE_TVS_TPSMD28A D205
 U 1 1 5A13BC8E
 P 2900 2950
 F 0 "D205" V 2992 2882 45  0000 R CNN
@@ -355,7 +350,7 @@ F 7 "F6570CT-ND" H 3410 3360 60  0001 C CNN "1st Source Part Number"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L GND #PWR012
+L icu-rescue:GND #PWR012
 U 1 1 5A13BD77
 P 2900 3150
 F 0 "#PWR012" H 2900 2900 50  0001 C CNN

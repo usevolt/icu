@@ -559,24 +559,24 @@ Wire Wire Line
 Text HLabel 7300 2650 2    60   Input ~ 0
 OUT1_SENSE
 Wire Wire Line
-	5200 3250 4900 3250
-Text HLabel 4900 3250 0    60   Input ~ 0
+	7000 2350 7300 2350
+Text HLabel 7300 2350 2    60   Input ~ 0
 OUT3_SENSE
 Wire Wire Line
-	7000 2050 7300 2050
-Text HLabel 7300 2050 2    60   Input ~ 0
+	7000 2450 7300 2450
+Text HLabel 7300 2450 2    60   Input ~ 0
 OUT4_SENSE
 Wire Wire Line
 	7000 1950 7300 1950
 Text HLabel 7300 1950 2    60   Input ~ 0
 OUT5_SENSE
 Wire Wire Line
-	7000 2350 7300 2350
-Text HLabel 7300 2350 2    60   Input ~ 0
+	5200 3150 4900 3150
+Text HLabel 4900 3150 0    60   Input ~ 0
 OUT6_SENSE
 Wire Wire Line
-	7000 2450 7300 2450
-Text HLabel 7300 2450 2    60   Input ~ 0
+	5200 3250 4900 3250
+Text HLabel 4900 3250 0    60   Input ~ 0
 OUT7_SENSE
 Wire Wire Line
 	5200 2150 4650 2150
