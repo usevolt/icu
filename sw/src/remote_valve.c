@@ -40,6 +40,7 @@ void remote_valve_step(remote_valve_st *this, uint16_t step_ms) {
 		this->req_ma = 0;
 		if (uv_delay(&this->delay, step_ms)) {
 			this->drive_to_zero = 0;
+			this->requester_priority_ptr = NULL;
 			this->stopped = 1;
 		}
 

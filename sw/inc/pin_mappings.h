@@ -56,6 +56,9 @@
 #define FEED_OPEN_OUT		2
 #define TILT_OUT			0
 #define FEED_SAW_OUT		3
+#define SAW_MOVE_OUT		4
+#define SAW_IN_DIR			DUAL_OUTPUT_NEG
+#define SAW_OUT_DIR			DUAL_OUTPUT_POS
 #define FEED_SERIES_DIR		DUAL_OUTPUT_NEG
 #define SAW_DIR				DUAL_OUTPUT_POS
 
