@@ -4,7 +4,7 @@ EELAYER 26 0
 EELAYER END
 $Descr A3 16535 11693
 encoding utf-8
-Sheet 1 10
+Sheet 1 11
 Title "ESB version 1"
 Date "2017-02-02"
 Rev "2"
@@ -225,7 +225,7 @@ Wire Wire Line
 Wire Wire Line
 	7200 4450 5900 4450
 Wire Wire Line
-	5900 4450 5900 3250
+	5900 4450 5900 4200
 Wire Wire Line
 	5900 3250 2500 3250
 Wire Wire Line
@@ -689,6 +689,10 @@ F29 "DIN5" I L 7200 5450 60
 F30 "DIN6" I L 7200 5550 60 
 F31 "DIN7" I L 7200 5650 60 
 F32 "DIN8" I L 7200 5750 60 
+F33 "MOSI" O L 7200 6350 60 
+F34 "MISO" I L 7200 6450 60 
+F35 "CS" O L 7200 6550 60 
+F36 "SCK" O L 7200 6650 60 
 $EndSheet
 Wire Wire Line
 	9850 4200 10050 4200
@@ -861,7 +865,7 @@ $EndComp
 Wire Wire Line
 	1800 5850 2200 5850
 Text Label 2200 5850 2    60   ~ 0
-5V_OUT
+VDD_OUT
 Wire Wire Line
 	2800 5850 2600 5850
 Wire Wire Line
@@ -897,4 +901,47 @@ Wire Wire Line
 	4700 5650 7200 5650
 Wire Wire Line
 	4700 5750 7200 5750
+$Comp
+L yageo:120 R101
+U 1 1 5B42E629
+P 5500 4300
+F 0 "R101" V 5508 4358 45  0000 L CNN
+F 1 "120" V 5592 4358 45  0000 L CNN
+F 2 "yageo:0603" H 5530 4450 20  0001 C CNN
+F 3 "" H 5469 4339 60  0001 C CNN
+F 4 "" H 5869 4739 60  0001 C CNN "1st Source Part Number"
+F 5 "Digikey" H 5769 4639 60  0001 C CNN "1st Source"
+F 6 "RC0603FR-07120RL" H 5669 4539 60  0001 C CNN "Manufacturer Part Number"
+F 7 "YAGEO" H 5569 4439 60  0001 C CNN "Manufacturer"
+	1    5500 4300
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	5500 4500 5500 4550
+Wire Wire Line
+	5500 4550 5800 4550
+Connection ~ 5800 4550
+Wire Wire Line
+	5500 4200 5900 4200
+Connection ~ 5900 4200
+Wire Wire Line
+	5900 4200 5900 3250
+$Sheet
+S 4750 6250 1100 500 
+U 5B436340
+F0 "Sheet5B43633F" 60
+F1 "imu.sch" 60
+F2 "MOSI" I R 5850 6350 60 
+F3 "MISO" O R 5850 6450 60 
+F4 "CS" I R 5850 6550 60 
+F5 "SCL" I R 5850 6650 60 
+$EndSheet
+Wire Wire Line
+	7200 6350 5850 6350
+Wire Wire Line
+	7200 6450 5850 6450
+Wire Wire Line
+	7200 6550 5850 6550
+Wire Wire Line
+	7200 6650 5850 6650
 $EndSCHEMATC
