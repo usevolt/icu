@@ -16,10 +16,6 @@
 
 
 // Analog inputs
-#define AIN1	ADC0_3
-#define AIN2	ADC0_4
-#define AIN3	ADC0_8
-#define AIN4	ADC0_9
 #define OUT1_SENSE	ADC1_11
 #define OUT2_SENSE	ADC1_10
 #define OUT3_SENSE	ADC1_8
@@ -34,6 +30,9 @@
 #define DIN3	P0_27
 #define DIN4	P1_7
 #define DIN5	P0_5
+#define DIN6	P0_4
+#define DIN7	P1_0
+#define DIN8	P0_31
 
 // Digital outputs
 #define OUT1_A	P0_24

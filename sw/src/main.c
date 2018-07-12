@@ -28,11 +28,11 @@ dev_st dev = {};
 
 void gpio_callback(uv_gpios_e gpio) {
 	// length measurement
-	if (gpio == DIN4) {
-		this->len_um += (UV_GPIO_GET(DIN4) == UV_GPIO_GET(DIN1)) ? this->len_calib : -this->len_calib;
+	if (gpio == DIN5) {
+		this->len_um += (UV_GPIO_GET(DIN5) == UV_GPIO_GET(DIN7)) ? this->len_calib : -this->len_calib;
 	}
-	else if (gpio == DIN1) {
-		this->len_um += (UV_GPIO_GET(DIN4) == UV_GPIO_GET(DIN1)) ? -this->len_calib : this->len_calib;
+	else if (gpio == DIN7) {
+		this->len_um += (UV_GPIO_GET(DIN5) == UV_GPIO_GET(DIN7)) ? -this->len_calib : this->len_calib;
 	}
 	else if (gpio == DIN2) {
 		this->saw_abs_pos += (UV_GPIO_GET(DIN2) == UV_GPIO_GET(DIN3)) ? -1 : 1;
@@ -40,7 +40,14 @@ void gpio_callback(uv_gpios_e gpio) {
 	else if (gpio == DIN3) {
 		this->saw_abs_pos += (UV_GPIO_GET(DIN2) == UV_GPIO_GET(DIN3)) ? 1 : -1;
 	}
+	else if (gpio == DIN1) {
+		this->width_pulses += (UV_GPIO_GET(DIN4) == UV_GPIO_GET(DIN1)) ? 1 : -1;
+	}
+	else if (gpio == DIN4) {
+		this->width_pulses += (UV_GPIO_GET(DIN4) == UV_GPIO_GET(DIN1)) ? -1 : 1;
+	}
 	else {
+
 	}
 }
 
@@ -63,8 +70,12 @@ void init(dev_st* me) {
 		this->feed_parallel_feed_ms = FEED_PARALLEL_FEED_MS_DEF;
 		this->feed_parallel_wait_ms = FEED_PARALLEL_WAIT_MS_DEF;
 
+		measurement_reset(&this->meas);
+
 		uv_memory_save();
 	}
+
+	measurement_init(&this->meas);
 
 	uv_mutex_init(&this->mutex);
 
@@ -90,6 +101,9 @@ void init(dev_st* me) {
 	this->saw_abs_pos = 0;
 	this->saw_position_unknown = 1;
 
+	this->width_mm = 0;
+	this->width_pulses = 0;
+
 	this->fsb.ignkey_state = FSB_IGNKEY_STATE_OFF;
 	this->fsb.emcy = 0;
 	this->ecu.hydr_pressure = 0;
@@ -101,13 +115,21 @@ void init(dev_st* me) {
 
 	uv_gpio_init_input(DIN1, PULL_UP_ENABLED);
 	uv_gpio_init_int(DIN1, INT_BOTH_EDGES);
+
 	uv_gpio_init_input(DIN2, PULL_UP_ENABLED);
 	uv_gpio_init_int(DIN2, INT_BOTH_EDGES);
+
 	uv_gpio_init_input(DIN3, PULL_UP_ENABLED);
 	uv_gpio_init_int(DIN3, INT_BOTH_EDGES);
+
 	uv_gpio_init_input(DIN4, PULL_UP_ENABLED);
 	uv_gpio_init_int(DIN4, INT_BOTH_EDGES);
 
+	uv_gpio_init_input(DIN5, PULL_UP_ENABLED);
+	uv_gpio_init_int(DIN5, INT_BOTH_EDGES);
+
+	uv_gpio_init_input(DIN7, PULL_UP_ENABLED);
+	uv_gpio_init_int(DIN7, INT_BOTH_EDGES);
 
 	//init terminal and pass application terminal commands array as a parameter
 	uv_terminal_init(terminal_commands, commands_size());
@@ -171,6 +193,11 @@ void step(void* me) {
 				uv_dual_output_enable(&this->out[i]);
 			}
 		}
+
+		if (this->width_pulses < 0) {
+			this->width_pulses = 0;
+		}
+		this->width_mm = get_width_mm(&this->meas, this->width_pulses);
 
 		uv_rtos_task_delay(step_ms);
 	}
@@ -548,7 +575,7 @@ int main(void) {
 
 	uv_init(&dev);
 
-	uv_rtos_task_create(&step, "step", UV_RTOS_MIN_STACK_SIZE * 2,
+	uv_rtos_task_create(&step, "step", UV_RTOS_MIN_STACK_SIZE * 3,
 			&dev, UV_RTOS_IDLE_PRIORITY + 2, NULL);
 
 	uv_rtos_task_create(&blades_open, "blades_open", UV_RTOS_MIN_STACK_SIZE,

@@ -15,6 +15,7 @@
 #include <uv_dual_output.h>
 #include <can_fsb.h>
 #include <uv_rtos.h>
+#include "measurement.h"
 #include "remote_valve.h"
 #include "command.h"
 
@@ -74,6 +75,10 @@ typedef struct _dev_st {
 	/// @brief: true when the target length is reached
 	uint8_t target_length_reached;
 
+	/// @brief: Wdith
+	uint32_t width_mm;
+	int32_t width_pulses;
+
 	/// @brief: Saw position calculated from the pulse sensor
 	int32_t saw_abs_pos;
 	/// @brief: maximum position for the saw
@@ -85,7 +90,9 @@ typedef struct _dev_st {
 	uint8_t saw_position_unknown;
 
 
+
 	uv_data_start_t data_start;
+
 
 	/// @brief: Length calibration value: How many micrometers
 	/// the length increases on every pulse
@@ -113,6 +120,8 @@ typedef struct _dev_st {
 	uint16_t feed_parallel_wait_ms;
 	// how long parallel feeding is on
 	uint16_t feed_parallel_feed_ms;
+
+	measurement_st meas;
 
 	uv_data_end_t data_end;
 

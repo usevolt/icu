@@ -157,6 +157,13 @@ canopen_object_st obj_dict[] = {
 				.data_ptr = &dev.len_um
 		},
 		{
+				.main_index = ICU_WIDTH_MM_INDEX,
+				.sub_index = ICU_WIDTH_MM_SUBINDEX,
+				.type = ICU_WIDTH_MM_TYPE,
+				.permissions = ICU_WIDTH_MM_PERMISSIONS,
+				.data_ptr = &dev.width_mm
+		},
+		{
 				.main_index = ICU_FEED_FINETUNE_WAIT_INDEX,
 				.sub_index = ICU_FEED_FINETUNE_WAIT_SUBINDEX,
 				.type = ICU_FEED_FINETUNE_WAIT_TYPE,
@@ -241,6 +248,7 @@ void out_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv)
 void cmd_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
 void allopen_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
 void feed_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
+void w_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
 
 
 const uv_command_st terminal_commands[] = {
@@ -281,6 +289,13 @@ const uv_command_st terminal_commands[] = {
 						"Usage: feed (\"finetune dist\"/\"finetune wait\"/\"finetune feed\"/\n"
 						"\"parallel wait\"/\"parallel feed\") (value)",
 				.callback = &feed_callb
+		},
+		{
+				.id = CMD_WIDTH,
+				.str = "w",
+				.instructions = "Interface for width measurement. Usage: \n"
+						"w (\"add\"/\"rm\"/\"clear\")",
+				.callback = &w_callb
 		}
 };
 
@@ -314,6 +329,7 @@ void stat_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 	printf("impl1 request: %i\n", dev.impl1.req_ma);
 	printf("impl2 request: %i\n", dev.impl2.req_ma);
 	printf("length: %i um\n", (int) this->len_um);
+	printf("width: %u pulses => %u mm\n", (unsigned int) this->width_pulses, (unsigned int) this->width_mm);
 	printf("saw pos: %i (Unknown: %u)\n", (int) this->saw_abs_pos, this->saw_position_unknown);
 }
 
@@ -461,3 +477,39 @@ void feed_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 			this->feed_parallel_wait_ms, this->feed_parallel_feed_ms);
 }
 
+
+
+void w_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv) {
+	if (args && (argv[0].type == ARG_STRING)) {
+		const char *str = argv[0].str;
+		if (strcmp(str, "add") == 0) {
+			if (args < 3) {
+				printf("Give pulse count and width in mm as arguments\n");
+			}
+			else {
+				add_raw_point(&this->meas, argv[2].number, argv[1].number);
+			}
+		}
+		else if (strcmp(str, "rm") == 0) {
+			if (args < 2) {
+				printf("Give index which is to be removed as an argument\n");
+			}
+			else {
+				remove_data_point(&this->meas, argv[1].number);
+			}
+		}
+		else if (strcmp(str, "clear") == 0) {
+			clear_data_points(&this->meas);
+		}
+
+	}
+	else {
+		printf("Width points: %u\n", uv_vector_size(&this->meas.points));
+		for (uint32_t i = 0; i < uv_vector_size(&this->meas.points); i++) {
+			printf("%u:  %u => %u mm\n",
+					(unsigned int) i,
+					(unsigned int) (*((width_point_st*) uv_vector_at(&this->meas.points, i))).pulse_count,
+					(unsigned int) (*((width_point_st*) uv_vector_at(&this->meas.points, i))).width_mm);
+		}
+	}
+}
