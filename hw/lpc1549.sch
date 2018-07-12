@@ -4,7 +4,7 @@ EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 9 14
+Sheet 9 11
 Title ""
 Date ""
 Rev ""
@@ -510,8 +510,8 @@ Wire Wire Line
 Text HLabel 7300 5450 2    60   Output ~ 0
 OUT2_2
 Wire Wire Line
-	5200 2550 4900 2550
-Text HLabel 4900 2550 0    60   Output ~ 0
+	5200 5550 4900 5550
+Text HLabel 4900 5550 0    60   Output ~ 0
 OUT3_1
 Wire Wire Line
 	5200 2250 4900 2250
@@ -522,8 +522,8 @@ Wire Wire Line
 Text HLabel 4900 2750 0    60   Output ~ 0
 OUT4_1
 Wire Wire Line
-	5200 2650 4900 2650
-Text HLabel 4900 2650 0    60   Output ~ 0
+	5200 5750 4900 5750
+Text HLabel 4900 5750 0    60   Output ~ 0
 OUT4_2
 Wire Wire Line
 	7000 2150 7300 2150
@@ -545,9 +545,7 @@ Wire Wire Line
 	5200 5250 4900 5250
 Text HLabel 4900 5250 0    60   Output ~ 0
 OUT7_1
-Wire Wire Line
-	5200 5150 4900 5150
-Text HLabel 4900 5150 0    60   Output ~ 0
+Text HLabel 8000 3450 2    60   Output ~ 0
 OUT7_2
 Wire Wire Line
 	7000 2550 7300 2550
@@ -641,21 +639,21 @@ Wire Wire Line
 Wire Wire Line
 	7850 5550 7950 5550
 Wire Wire Line
-	5200 2950 4900 2950
-Text HLabel 4900 2950 0    60   Input ~ 0
-AIN1
+	5200 2950 4650 2950
+Text HLabel 4250 2950 0    60   Input ~ 0
+DIN5
 Wire Wire Line
-	5200 2850 4900 2850
-Text HLabel 4900 2850 0    60   Input ~ 0
-AIN2
+	5200 2850 4650 2850
+Text HLabel 4250 2850 0    60   Input ~ 0
+DIN6
 Wire Wire Line
-	5200 2450 4900 2450
-Text HLabel 4900 2450 0    60   Input ~ 0
-AIN3
+	5200 2450 4650 2450
+Text HLabel 4250 2450 0    60   Input ~ 0
+DIN7
 Wire Wire Line
-	5200 2350 4900 2350
-Text HLabel 4900 2350 0    60   Input ~ 0
-AIN4
+	5200 2350 4650 2350
+Text HLabel 4250 2350 0    60   Input ~ 0
+DIN8
 Text HLabel 8300 4750 2    60   Input ~ 0
 DIN4
 $Comp
@@ -735,4 +733,94 @@ Wire Wire Line
 	3600 4400 3950 4400
 Wire Wire Line
 	3600 4100 3950 4100
+$Comp
+L icu-rescue:1K R903
+U 1 1 5B1F4296
+P 4450 2350
+F 0 "R903" H 4500 2534 45  0000 C CNN
+F 1 "1K" H 4500 2450 45  0000 C CNN
+F 2 "yageo:0603" H 4480 2500 20  0001 C CNN
+F 3 "" H 4419 2389 60  0001 C CNN
+F 4 "" H 4819 2789 60  0001 C CNN "1st Source Part Number"
+F 5 "Digikey" H 4719 2689 60  0001 C CNN "1st Source"
+F 6 "RC0603FR-071KL" H 4619 2589 60  0001 C CNN "Manufacturer Part Number"
+F 7 "YAGEO" H 4519 2489 60  0001 C CNN "Manufacturer"
+	1    4450 2350
+	1    0    0    -1  
+$EndComp
+$Comp
+L icu-rescue:1K R908
+U 1 1 5B1F42DA
+P 4450 2450
+F 0 "R908" H 4500 2634 45  0000 C CNN
+F 1 "1K" H 4500 2550 45  0000 C CNN
+F 2 "yageo:0603" H 4480 2600 20  0001 C CNN
+F 3 "" H 4419 2489 60  0001 C CNN
+F 4 "" H 4819 2889 60  0001 C CNN "1st Source Part Number"
+F 5 "Digikey" H 4719 2789 60  0001 C CNN "1st Source"
+F 6 "RC0603FR-071KL" H 4619 2689 60  0001 C CNN "Manufacturer Part Number"
+F 7 "YAGEO" H 4519 2589 60  0001 C CNN "Manufacturer"
+	1    4450 2450
+	1    0    0    -1  
+$EndComp
+$Comp
+L icu-rescue:1K R909
+U 1 1 5B1F431C
+P 4450 2850
+F 0 "R909" H 4500 3034 45  0000 C CNN
+F 1 "1K" H 4500 2950 45  0000 C CNN
+F 2 "yageo:0603" H 4480 3000 20  0001 C CNN
+F 3 "" H 4419 2889 60  0001 C CNN
+F 4 "" H 4819 3289 60  0001 C CNN "1st Source Part Number"
+F 5 "Digikey" H 4719 3189 60  0001 C CNN "1st Source"
+F 6 "RC0603FR-071KL" H 4619 3089 60  0001 C CNN "Manufacturer Part Number"
+F 7 "YAGEO" H 4519 2989 60  0001 C CNN "Manufacturer"
+	1    4450 2850
+	1    0    0    -1  
+$EndComp
+$Comp
+L icu-rescue:1K R910
+U 1 1 5B1F436C
+P 4450 2950
+F 0 "R910" H 4500 3134 45  0000 C CNN
+F 1 "1K" H 4500 3050 45  0000 C CNN
+F 2 "yageo:0603" H 4480 3100 20  0001 C CNN
+F 3 "" H 4419 2989 60  0001 C CNN
+F 4 "" H 4819 3389 60  0001 C CNN "1st Source Part Number"
+F 5 "Digikey" H 4719 3289 60  0001 C CNN "1st Source"
+F 6 "RC0603FR-071KL" H 4619 3189 60  0001 C CNN "Manufacturer Part Number"
+F 7 "YAGEO" H 4519 3089 60  0001 C CNN "Manufacturer"
+	1    4450 2950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4350 2950 4250 2950
+Wire Wire Line
+	4250 2850 4350 2850
+Wire Wire Line
+	4350 2450 4250 2450
+Wire Wire Line
+	4350 2350 4250 2350
+Wire Wire Line
+	5200 2650 4900 2650
+Wire Wire Line
+	4900 2550 5200 2550
+Text HLabel 4900 2650 0    60   Output ~ 0
+MOSI
+Text HLabel 4900 2550 0    60   Input ~ 0
+MISO
+Wire Wire Line
+	5200 5150 4900 5150
+Text HLabel 4900 5150 0    60   Output ~ 0
+CS
+Wire Wire Line
+	5200 5050 4950 5050
+Text HLabel 4950 5050 0    60   Output ~ 0
+SCK
+Wire Wire Line
+	7450 3450 7450 3150
+Wire Wire Line
+	7450 3150 7000 3150
+Wire Wire Line
+	7450 3450 8000 3450
 $EndSCHEMATC

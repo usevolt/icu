@@ -87,6 +87,20 @@ canopen_object_st obj_dict[] = {
 				.data_ptr = &this->saw.req
 		},
 		{
+				.main_index = ICU_SAW_OUT_SPEED_INDEX,
+				.sub_index = ICU_SAW_OUT_SPEED_SUBINDEX,
+				.type = ICU_SAW_OUT_SPEED_TYPE,
+				.permissions = ICU_SAW_OUT_SPEED_PERMISSIONS,
+				.data_ptr = &this->saw_out_speed
+		},
+		{
+				.main_index = ICU_SAW_IN_SPEED_INDEX,
+				.sub_index = ICU_SAW_IN_SPEED_SUBINDEX,
+				.type = ICU_SAW_IN_SPEED_TYPE,
+				.permissions = ICU_SAW_IN_SPEED_PERMISSIONS,
+				.data_ptr = &this->saw_in_speed
+		},
+		{
 				.main_index = ICU_TILT_CONF_INDEX,
 				.array_max_size = ICU_TILT_CONF_ARRAY_MAX_SIZE,
 				.type = ICU_TILT_CONF_TYPE,
@@ -164,6 +178,13 @@ canopen_object_st obj_dict[] = {
 				.data_ptr = &dev.width_mm
 		},
 		{
+				.main_index = ICU_VOLUME_INDEX,
+				.sub_index = ICU_VOLUME_SUBINDEX,
+				.type = ICU_VOLUME_TYPE,
+				.permissions = ICU_VOLUME_PERMISSIONS,
+				.data_ptr = &dev.total_volume
+		},
+		{
 				.main_index = ICU_FEED_FINETUNE_WAIT_INDEX,
 				.sub_index = ICU_FEED_FINETUNE_WAIT_SUBINDEX,
 				.type = ICU_FEED_FINETUNE_WAIT_TYPE,
@@ -204,6 +225,13 @@ canopen_object_st obj_dict[] = {
 				.type = ICU_SAW_POS_UNKNOWN_TYPE,
 				.permissions = ICU_SAW_POS_UNKNOWN_PERMISSIONS,
 				.data_ptr = &dev.saw_position_unknown
+		},
+		{
+				.main_index = ICU_RESET_VOL_INDEX,
+				.sub_index = ICU_RESET_VOL_SUBINDEX,
+				.type = ICU_RESET_VOL_TYPE,
+				.permissions = ICU_RESET_VOL_PERMISSIONS,
+				.data_ptr = &dev.vol_reset
 		},
 		{
 				.main_index = ICU_SAVE_INDEX,
@@ -249,6 +277,7 @@ void cmd_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv)
 void allopen_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
 void feed_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
 void w_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
+void saw_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
 
 
 const uv_command_st terminal_commands[] = {
@@ -286,7 +315,7 @@ const uv_command_st terminal_commands[] = {
 				.id = CMD_FEED,
 				.str = "feed",
 				.instructions = "Gets or sets the Feeding command parameters.\n"
-						"Usage: feed (\"finetune dist\"/\"finetune wait\"/\"finetune feed\"/\n"
+						"Usage: feed (\"finetune start dist\"/\"finetune end dist\"/\"finetune wait\"/\"finetune feed\"/\n"
 						"\"parallel wait\"/\"parallel feed\") (value)",
 				.callback = &feed_callb
 		},
@@ -296,6 +325,13 @@ const uv_command_st terminal_commands[] = {
 				.instructions = "Interface for width measurement. Usage: \n"
 						"w (\"add\"/\"rm\"/\"clear\")",
 				.callback = &w_callb
+		},
+		{
+				.id = CMD_SAW,
+				.str = "saw",
+				.instructions = "Gets or sets saw command parameter.\n"
+						"Usage: saw (\"in\"/\"out\")",
+				.callback = &saw_callb
 		}
 };
 
@@ -328,8 +364,9 @@ void stat_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 	command_print(&dev.tilt, "Tilt");
 	printf("impl1 request: %i\n", dev.impl1.req_ma);
 	printf("impl2 request: %i\n", dev.impl2.req_ma);
-	printf("length: %i um\n", (int) this->len_um);
 	printf("width: %u pulses => %u mm\n", (unsigned int) this->width_pulses, (unsigned int) this->width_mm);
+	printf("length: %i um, target length: %i um\n", (int) this->len_um, (int) this->target_length_um);
+	printf("Total volume: %i mm3\n", (int) this->total_volume);
 	printf("saw pos: %i (Unknown: %u)\n", (int) this->saw_abs_pos, this->saw_position_unknown);
 }
 
@@ -451,8 +488,11 @@ void feed_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 			printf("First argument should be string\n");
 		}
 		else {
-			if (strcmp(argv[0].str, "finetune dist") == 0) {
+			if (strcmp(argv[0].str, "finetune start dist") == 0) {
 				this->feed_finetune_start_dist_um = argv[1].number;
+			}
+			else if (strcmp(argv[0].str, "finetune end dist") == 0) {
+				this->feed_finetune_end_dist_um = argv[1].number;
 			}
 			else if (strcmp(argv[0].str, "finetune wait") == 0) {
 				this->feed_finetune_wait_ms = argv[1].number;
@@ -471,8 +511,11 @@ void feed_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 			}
 		}
 	}
-	printf("Feed:\nFinetune wait time: %u ms\nFinetune feed time: %u ms\n"
+	printf("Feed:\nFinetune start distance: %u um\nFinetune end distance: %u um\n"
+			"Finetune wait time: %u ms\nFinetune feed time: %u ms\n"
 			"Parallel wait time: %u ms\nParallel feed time: %u ms\n",
+			(unsigned int) this->feed_finetune_start_dist_um,
+			(unsigned int) this->feed_finetune_end_dist_um,
 			this->feed_finetune_wait_ms, this->feed_finetune_feed_ms,
 			this->feed_parallel_wait_ms, this->feed_parallel_feed_ms);
 }
@@ -513,3 +556,27 @@ void w_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv) {
 		}
 	}
 }
+
+
+void saw_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv) {
+	if (args >= 2) {
+		if (argv[0].type != ARG_STRING) {
+			printf("First argument should be string\n");
+		}
+		else {
+			if (strcmp(argv[0].str, "in") == 0) {
+				this->saw_in_speed = argv[1].number;
+			}
+			else if (strcmp(argv[0].str, "out") == 0) {
+				this->saw_out_speed = argv[1].number;
+			}
+			else {
+				printf("Unknown argument '%s'\n", argv[0].str);
+			}
+		}
+	}
+	printf("Saw:\n  In speed: %u\n  Out speed: %u\n",
+			this->saw_in_speed, this->saw_out_speed);
+}
+
+

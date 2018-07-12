@@ -15,6 +15,7 @@
 #include <uv_dual_output.h>
 #include <can_fsb.h>
 #include <uv_rtos.h>
+#include <eeprom.h>
 #include "measurement.h"
 #include "remote_valve.h"
 #include "command.h"
@@ -23,24 +24,32 @@
 #define OUT_COUNT						7
 #define KEYPAD_BUTTON_COUNT				10
 
-#define REMOTE_VALVE_DELAY_MS			1000
+#define REMOTE_VALVE_DELAY_MS			1200
 #define ALL_OPEN_BLADE_OPEN_TIME_MS_DEF	500
 #define ALL_OPEN_PRESSURE_LIMIT_DEF		180
 
 #define LEN_CALIB_DEFAULT_UM			700
 
 /// @brief: Length tolerance for checking if the feeding has stopped
-#define FEED_PARALLEL_TOLERANCE_UM		1000
-#define FEED_PARALLEL_WAIT_MS_DEF		300
+#define FEED_PARALLEL_TOLERANCE_UM		100
+#define FEED_PARALLEL_WAIT_MS_DEF		50
 #define FEED_PARALLEL_FEED_MS_DEF		500
-#define FEED_FINETUNE_START_DIST_UM_DEF	100000
+#define FEED_FINETUNE_START_DIST_UM_DEF	500000
+#define FEED_FINETUNE_END_DIST_UM_DEF	50000
 #define FEED_FINETUNE_WAIT_MS_DEF		400
-#define FEED_FINETUNE_FEED_MS_DEF		400
+#define FEED_FINETUNE_FEED_MS_DEF		200
 
 /// @brief: Maximum saw absolute position value which is calculated as "saw home"
-#define SAW_HOME_VAL					20
+#define SAW_HOME_VAL					100
+#define SAW_OUT_SPEED_DEF				150
+#define SAW_IN_SPEED_DEF				500
+/// @brief: Time to wait for saw to accelerate
+#define SAW_ACC_DELAY_MS				200
+/// @brief: Time delay which saw is tried to pull in
+#define SAW_IN_WAIT_MS					2000
 
 
+#define VOLUME_EEPROM_ADDR				0
 
 /// @brief: main data structure.
 /// This struct can be save to non-volatile flash memory with
@@ -79,6 +88,11 @@ typedef struct _dev_st {
 	uint32_t width_mm;
 	int32_t width_pulses;
 
+	/// @brief: Volume
+	uint32_t total_volume;
+	uint32_t log_volume;
+	uint8_t vol_reset;
+
 	/// @brief: Saw position calculated from the pulse sensor
 	int32_t saw_abs_pos;
 	/// @brief: maximum position for the saw
@@ -100,10 +114,12 @@ typedef struct _dev_st {
 
 	command_st blades_open;
 	command_st feed_open;
-	command_st saw;
 	command_st feed;
 	command_st all_open;
 	command_st tilt;
+	command_st saw;
+	uint16_t saw_in_speed;
+	uint16_t saw_out_speed;
 
 	int16_t all_open_blade_open_time_ms;
 	uint16_t all_open_pressure_limit;
@@ -111,6 +127,8 @@ typedef struct _dev_st {
 
 	/// how far away fine tuning is started from the target length
 	uint32_t feed_finetune_start_dist_um;
+	/// tolerance of the final target length
+	uint32_t feed_finetune_end_dist_um;
 	// how long finetuning waits for the length to settle
 	uint16_t feed_finetune_wait_ms;
 	// how long finetuning feed pulses last

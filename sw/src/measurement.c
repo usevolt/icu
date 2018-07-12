@@ -13,6 +13,42 @@
 
 
 
+
+// default points measured roughly 120718
+#define DEF_POINT_COUNT	7
+width_point_st def_points[DEF_POINT_COUNT] = {
+		{
+				.pulse_count = 0,
+				.width_mm = 30
+		},
+		{
+				.pulse_count = 102,
+				.width_mm = 70
+		},
+		{
+				.pulse_count = 162,
+				.width_mm = 86
+		},
+		{
+				.pulse_count = 190,
+				.width_mm = 105
+		},
+		{
+				.pulse_count = 334,
+				.width_mm = 185
+		},
+		{
+				.pulse_count = 484,
+				.width_mm = 300
+		},
+		{
+				.pulse_count = 685,
+				.width_mm = 470
+		},
+
+};
+
+
 void measurement_init(measurement_st *this) {
 }
 
@@ -21,6 +57,11 @@ void measurement_init(measurement_st *this) {
 void measurement_reset(measurement_st *this) {
 	uv_vector_init(&this->points, &this->points_buffer,
 			WIDTH_LOOK_UP_TABLE_SIZE, sizeof(this->points_buffer[0]));
+
+	// populate point vector with default points
+	for (uint32_t i = 0; i < DEF_POINT_COUNT; i++) {
+		uv_vector_push_back(&this->points, &def_points[i]);
+	}
 }
 
 
@@ -54,6 +95,15 @@ int get_width_mm(measurement_st *this, uint32_t pulse_count) {
 	// get the k value from those two points
 	float k = uv_relf(pulse_count, (*((width_point_st*) uv_vector_at(&this->points, rel_d1))).pulse_count,
 			(*((width_point_st*) uv_vector_at(&this->points, rel_d2))).pulse_count);
+	if (k < 0) {
+		k = 0.0f;
+	}
+	else if (k > 1.0f) {
+		k = 1.0f;
+	}
+	else {
+
+	}
 
 	// linearly interpolate with k from those points' widths
 	float result = uv_lerpf(k, (*((width_point_st *) uv_vector_at(&this->points, rel_d1))).width_mm,

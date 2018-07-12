@@ -34,11 +34,28 @@ void gpio_callback(uv_gpios_e gpio) {
 	else if (gpio == DIN7) {
 		this->len_um += (UV_GPIO_GET(DIN5) == UV_GPIO_GET(DIN7)) ? -this->len_calib : this->len_calib;
 	}
-	else if (gpio == DIN2) {
-		this->saw_abs_pos += (UV_GPIO_GET(DIN2) == UV_GPIO_GET(DIN3)) ? -1 : 1;
-	}
-	else if (gpio == DIN3) {
-		this->saw_abs_pos += (UV_GPIO_GET(DIN2) == UV_GPIO_GET(DIN3)) ? 1 : -1;
+	else if ((gpio == DIN2) || (gpio == DIN3)) {
+		if (gpio == DIN2) {
+			this->saw_abs_pos += (UV_GPIO_GET(DIN2) == UV_GPIO_GET(DIN3)) ? -1 : 1;
+		}
+		else if (gpio == DIN3) {
+			this->saw_abs_pos += (UV_GPIO_GET(DIN2) == UV_GPIO_GET(DIN3)) ? 1 : -1;
+		}
+		else {
+
+		}
+		// saw position cannot be negative
+		if (this->saw_abs_pos < 0) {
+			this->saw_abs_pos = 0;
+		}
+		// saw maximum position is calculated on-the-go
+		else if (this->saw_abs_pos > this->saw_max_pos) {
+			this->saw_max_pos = this->saw_abs_pos;
+		}
+		else {
+			// calculate saw relative position
+			this->saw_rel_pos = 100 * this->saw_abs_pos / this->saw_max_pos;
+		}
 	}
 	else if (gpio == DIN1) {
 		this->width_pulses += (UV_GPIO_GET(DIN4) == UV_GPIO_GET(DIN1)) ? 1 : -1;
@@ -55,6 +72,7 @@ void gpio_callback(uv_gpios_e gpio) {
 void init(dev_st* me) {
 	// load non-volatile data
 	if (uv_memory_load()) {
+		printf("*****\nresetting defaults\n*****\n");
 		command_reset(&this->blades_open);
 		command_reset(&this->feed_open);
 		command_reset(&this->feed);
@@ -65,12 +83,18 @@ void init(dev_st* me) {
 		this->all_open_blade_open_time_ms = ALL_OPEN_BLADE_OPEN_TIME_MS_DEF;
 		this->len_calib = LEN_CALIB_DEFAULT_UM;
 		this->feed_finetune_start_dist_um = FEED_FINETUNE_START_DIST_UM_DEF;
+		this->feed_finetune_end_dist_um = FEED_FINETUNE_END_DIST_UM_DEF;
 		this->feed_finetune_feed_ms = FEED_FINETUNE_FEED_MS_DEF;
 		this->feed_finetune_wait_ms = FEED_FINETUNE_WAIT_MS_DEF;
 		this->feed_parallel_feed_ms = FEED_PARALLEL_FEED_MS_DEF;
 		this->feed_parallel_wait_ms = FEED_PARALLEL_WAIT_MS_DEF;
 
+		this->total_volume = 0;
+		uv_eeprom_write(&this->total_volume, sizeof(this->total_volume), VOLUME_EEPROM_ADDR);
+
 		measurement_reset(&this->meas);
+		this->saw_in_speed = SAW_IN_SPEED_DEF;
+		this->saw_out_speed = SAW_OUT_SPEED_DEF;
 
 		uv_memory_save();
 	}
@@ -103,6 +127,10 @@ void init(dev_st* me) {
 
 	this->width_mm = 0;
 	this->width_pulses = 0;
+
+	this->log_volume = 0;
+	this->vol_reset = 0;
+	uv_eeprom_read(&this->total_volume, sizeof(this->total_volume), VOLUME_EEPROM_ADDR);
 
 	this->fsb.ignkey_state = FSB_IGNKEY_STATE_OFF;
 	this->fsb.emcy = 0;
@@ -198,6 +226,44 @@ void step(void* me) {
 			this->width_pulses = 0;
 		}
 		this->width_mm = get_width_mm(&this->meas, this->width_pulses);
+
+
+		// calculate volume change in microcubicmeters
+		static int32_t vol_last_len = 0;
+		static uint32_t vol_last_width = 500;
+		if ((this->len_um - vol_last_len) / 1000 >= 100) {
+			uint32_t w = (this->width_mm < vol_last_width) ? this->width_mm : vol_last_width;
+			uint32_t vol = (3.1415 * w / 2 * w / 2) / 1000 *
+					((this->len_um - vol_last_len) / 1000);
+			this->log_volume += vol;
+
+			vol_last_len = this->len_um;
+			vol_last_width = this->width_mm;
+		}
+		// the log was cut
+		if (command_get_req(&this->saw) && this->log_volume) {
+			static uint32_t last_tot_vol = 0;
+
+			this->total_volume += this->log_volume;
+
+			// write to eeprom when volume increases by 0.1 cubic meters
+			if ((this->total_volume / 100000) != (last_tot_vol / 100000)) {
+				uv_eeprom_write(&this->total_volume, sizeof(this->total_volume), VOLUME_EEPROM_ADDR);
+				last_tot_vol = this->total_volume;
+			}
+
+			this->log_volume = 0;
+			vol_last_len = 0;
+			vol_last_width = 500;
+		}
+
+		// volume reset
+		if (this->vol_reset) {
+			this->vol_reset = 0;
+			this->total_volume = 0;
+			uv_eeprom_write(&this->total_volume, sizeof(this->total_volume), VOLUME_EEPROM_ADDR);
+		}
+
 
 		uv_rtos_task_delay(step_ms);
 	}
@@ -348,6 +414,7 @@ typedef enum {
 	FEED_STATE_NORMAL = 0,
 	FEED_STATE_FINETUNE,
 	FEED_STATE_DEBRANCH,
+	FEED_STATE_REACHED,
 	FEED_STATE_COUNT
 } feed_state_e;
 
@@ -356,6 +423,7 @@ typedef struct {
 	feed_state_e state;
 	int32_t last_length;
 	uv_delay_st parallel_delay;
+	uv_delay_st finetune_delay;
 	bool parallel_feeding;
 } feed_st;
 
@@ -369,6 +437,9 @@ static bool feed_get_parallel_req(feed_st *feed, uint16_t step_ms) {
 		if (uv_delay(&feed->parallel_delay, step_ms)) {
 			feed->parallel_feeding = false;
 			uv_delay_init(&feed->parallel_delay, this->feed_parallel_wait_ms);
+		}
+		else {
+			ret = true;
 		}
 	}
 	else {
@@ -394,6 +465,10 @@ static bool feed_finetune_distance_reached(feed_st *feed) {
 	return (abs(this->len_um - this->target_length_um) < this->feed_finetune_start_dist_um);
 }
 
+static bool feed_target_reached(feed_st *feed) {
+	return (abs(this->len_um - this->target_length_um) < this->feed_finetune_end_dist_um);
+}
+
 
 static void feed_set_state(feed_st *feed, feed_state_e state) {
 	feed->state = state;
@@ -403,7 +478,6 @@ static void feed_set_state(feed_st *feed, feed_state_e state) {
 		feed->parallel_feeding = false;
 	}
 	else if (state == FEED_STATE_FINETUNE) {
-
 	}
 	else {
 
@@ -413,6 +487,7 @@ static void feed_set_state(feed_st *feed, feed_state_e state) {
 static void feed(void *me) {
 	uint16_t step_ms = 20;
 	feed_st feed;
+	feed_set_state(&feed, FEED_STATE_NORMAL);
 	// make sure that main task initializes commands
 	uv_rtos_task_delay(step_ms);
 
@@ -430,8 +505,12 @@ static void feed(void *me) {
 		// feeding started
 		if (command_is_pressed(&this->feed)) {
 			// on start determine the state where we are
-			feed_set_state(&feed, feed_finetune_distance_reached(&feed) ?
-					FEED_STATE_FINETUNE : FEED_STATE_NORMAL);
+			feed_set_state(&feed, FEED_STATE_NORMAL);
+		}
+
+		// feeding is disabled while sawing
+		while (uv_dual_output_get_dir(&this->out[SAW_MOVE_OUT]) != DUAL_OUTPUT_OFF) {
+			uv_rtos_task_delay(step_ms);
 		}
 
 		if (command_get_req(&this->feed)) {
@@ -441,32 +520,60 @@ static void feed(void *me) {
 						command_get_current_ma(&this->feed));
 
 				// parallel feeding
+				bool parallel = feed_get_parallel_req(&feed, step_ms);
 				uv_dual_output_set_dir(&this->out[FEED_SAW_OUT],
-						feed_get_parallel_req(&feed, step_ms) ? DUAL_OUTPUT_OFF : FEED_SERIES_DIR);
+						parallel ? DUAL_OUTPUT_OFF : FEED_SERIES_DIR);
 
 				// wait until we are close to target length, then change to fine tuning
 				if (feed_finetune_distance_reached(&feed)) {
+					remote_valve_set_request(&this->impl2, &this->feed, 0);
+					uv_rtos_task_delay(this->feed_finetune_wait_ms);
 					feed_set_state(&feed, FEED_STATE_FINETUNE);
 				}
 			}
 			else if (feed.state == FEED_STATE_FINETUNE) {
 				// when finetuning, parallel feeding is always on
 				uv_dual_output_set_dir(&this->out[FEED_SAW_OUT], FEED_SERIES_DIR);
+				// feed towards the target with reduced speed
+				remote_valve_set_request(&this->impl2, &this->feed,
+						(this->target_length_um > this->len_um) ?
+								(command_get_current_ma(&this->feed) / 8) :
+								-(command_get_current_ma(&this->feed) / 8));
+				// time to finetune
+				if (feed_target_reached(&feed)) {
+					while (true) {
+						remote_valve_set_request(&this->impl2, &this->feed, 0);
 
+						uv_rtos_task_delay(this->feed_finetune_wait_ms);
+
+						if (feed_target_reached(&feed) || command_get_req(&this->saw)) {
+							uv_dual_output_set_dir(&this->out[FEED_SAW_OUT], DUAL_OUTPUT_OFF);
+							break;
+						}
+						else {
+							remote_valve_set_request(&this->impl2, &this->feed,
+									(this->target_length_um > this->len_um) ?
+											(command_get_current_ma(&this->feed) / 8) :
+											-(command_get_current_ma(&this->feed) / 8));
+							uv_rtos_task_delay(this->feed_finetune_feed_ms);
+						}
+					}
+				}
 			}
 			else {
 
 			}
 
-
-
 			// update last length
 			feed.last_length = this->len_um;
+		}
+		else {
 		}
 
 
 		// feeding ended
 		if (command_is_released(&this->feed)) {
+			feed_set_state(&feed, FEED_STATE_NORMAL);
 			uv_dual_output_set_dir(&this->out[FEED_SAW_OUT], DUAL_OUTPUT_OFF);
 
 			remote_valve_set_request(&this->impl2, &this->feed, 0);
@@ -484,78 +591,87 @@ static inline bool saw_is_home(int32_t saw_pos) {
 
 static void saw(void *me) {
 	uint16_t step_ms = 20;
-	int32_t saw_last_pos = 0;
 	// make sure that main task initializes commands
 	uv_rtos_task_delay(step_ms);
+
+	int32_t saw_out_speed = 0;
 
 	while (true) {
 		command_step(&this->saw, step_ms);
 
-		// saw positoin cannot be negative
-		if (this->saw_abs_pos < 0) {
-			this->saw_abs_pos = 0;
-		}
-		// saw maximum position is calculated on-the-go
-		else if (this->saw_abs_pos > this->saw_max_pos) {
-			this->saw_max_pos = this->saw_abs_pos;
-		}
-		else {
-			// calculate saw relative position
-			this->saw_rel_pos = 100 * this->saw_abs_pos / this->saw_max_pos;
-		}
-
 		// length is cleared when saw starts
 		if (command_is_pressed(&this->saw)) {
+			saw_out_speed = this->saw_out_speed;
 			this->len_um = 0;
-		}
-
-		if (command_get_req(&this->saw)) {
-			// saw in request
-			if (command_get_req(&this->saw) > 0) {
-				// set saw position to known. Operator is responsible for
-				// taking the saw in at start up
-				this->saw_position_unknown = 0;
-			}
-			if (command_get_req(&this->feed) == 0) {
+			// accelerate the saw
+			if (command_get_req(&this->saw) < 0) {
 				uv_dual_output_set_dir(&this->out[FEED_SAW_OUT], SAW_DIR);
-
 				remote_valve_set_request(&this->impl2, &this->saw,
 						command_get_current_ma(&this->saw));
+
+				uv_rtos_task_delay(SAW_ACC_DELAY_MS);
 			}
 		}
-		else {
-//			// pull saw in if it's out
-//			if (!this->saw_position_unknown) {
-//				int32_t saw_pos = this->saw_abs_pos;
-//				if (!saw_is_home(saw_pos)) {
-//					uv_dual_output_set_dir(&this->out[FEED_SAW_OUT], SAW_DIR);
-//
-//					remote_valve_set_request(&this->impl2, &this->saw,
-//							this->saw.confs.max_current_p);
-//				}
-//				else if (!saw_is_home(saw_last_pos)) {
-//					// will be called once when the saw arrives home
-//					remote_valve_drive_to_zero(&this->impl2);
-//					while (!remote_valve_is_zero(&this->impl2)) {
-//						uv_rtos_task_delay(10);
-//					}
-//					// put off valve control
-//				}
-//				else {
-//
-//				}
-//				saw_last_pos = saw_pos;
-//			}
+
+		// saw in request
+		if (command_get_req(&this->saw) > 0) {
+			// saw is coming in
+			// set saw position to known. Operator is responsible for
+			// taking the saw in at start up
+			this->saw_position_unknown = 0;
+			uv_dual_output_set_dir(&this->out[SAW_MOVE_OUT], SAW_IN_DIR);
+			remote_valve_set_request(&this->impl1, &this->saw, this->saw_in_speed);
 		}
+
+		// saw out request
+		// active only if saw position is known
+		else if ((command_get_req(&this->saw) < 0) && (!this->saw_position_unknown)) {
+			// small fuzzy controller limiting the out speed when sawing wood
+			if (this->ecu.hydr_pressure > 230) {
+				if (saw_out_speed > 40) {
+					saw_out_speed -= 20;
+				}
+			}
+			uv_dual_output_set_dir(&this->out[FEED_SAW_OUT], SAW_DIR);
+
+			remote_valve_set_request(&this->impl2, &this->saw,
+					command_get_current_ma(&this->saw));
+
+			uv_dual_output_set_dir(&this->out[SAW_MOVE_OUT], SAW_OUT_DIR);
+			remote_valve_set_request(&this->impl1, &this->saw, saw_out_speed);
+		}
+		else {
+		}
+
 
 		// if command was released when the saw is home,
 		// stop valves and drive remote valve to zero
 		if (command_is_released(&this->saw)) {
-//				&&
-//				saw_is_home(this->saw_abs_pos)) {
+			remote_valve_drive_to_zero(&this->impl2);
+			if (!this->saw_position_unknown) {
+				uv_delay_st delay;
+				uv_delay_init(&delay, SAW_IN_WAIT_MS);
+				// wait a little when changing saw direction
+				if (!saw_is_home(this->saw_abs_pos)) {
+					uv_dual_output_set_dir(&this->out[SAW_MOVE_OUT], SAW_IN_DIR);
+					uv_rtos_task_delay(100);
+				}
+				while (!saw_is_home(this->saw_abs_pos)) {
+					uv_dual_output_set_dir(&this->out[SAW_MOVE_OUT], SAW_IN_DIR);
+					remote_valve_set_request(&this->impl1, &this->saw, this->saw_in_speed);
+
+					// time delay so that we dont end in an infinite loop is saw doesnt come in
+					if (uv_delay(&delay, step_ms)) {
+						break;
+					}
+
+					uv_rtos_task_delay(step_ms);
+				}
+			}
+			remote_valve_set_request(&this->impl1, &this->saw, 0);
+			uv_dual_output_set_dir(&this->out[SAW_MOVE_OUT], DUAL_OUTPUT_OFF);
 			// wait for oil flow to stop. Otherwise the oil rotates
 			// the feed rollers when saw stops
-			remote_valve_drive_to_zero(&this->impl2);
 			while (!remote_valve_is_zero(&this->impl2)) {
 				uv_rtos_task_delay(10);
 			}
@@ -584,16 +700,16 @@ int main(void) {
 	uv_rtos_task_create(&feed_open, "feed_open", UV_RTOS_MIN_STACK_SIZE,
 			&dev, UV_RTOS_IDLE_PRIORITY + 1, NULL);
 
-	uv_rtos_task_create(&feed, "feed", UV_RTOS_MIN_STACK_SIZE * 2,
+	uv_rtos_task_create(&tilt, "tilt", UV_RTOS_MIN_STACK_SIZE,
+			&dev, UV_RTOS_IDLE_PRIORITY + 1, NULL);
+
+	uv_rtos_task_create(&all_open, "all_open", UV_RTOS_MIN_STACK_SIZE,
 			&dev, UV_RTOS_IDLE_PRIORITY + 1, NULL);
 
 	uv_rtos_task_create(&saw, "saw", UV_RTOS_MIN_STACK_SIZE,
 			&dev, UV_RTOS_IDLE_PRIORITY + 1, NULL);
 
-	uv_rtos_task_create(&tilt, "tilt", UV_RTOS_MIN_STACK_SIZE,
-			&dev, UV_RTOS_IDLE_PRIORITY + 1, NULL);
-
-	uv_rtos_task_create(&all_open, "all_open", UV_RTOS_MIN_STACK_SIZE,
+	uv_rtos_task_create(&feed, "feed", UV_RTOS_MIN_STACK_SIZE * 2,
 			&dev, UV_RTOS_IDLE_PRIORITY + 1, NULL);
 
 	uv_rtos_start_scheduler();
