@@ -57,7 +57,7 @@ canopen_object_st obj_dict[] = {
 				.array_max_size = ICU_BLADEOPEN_PARAM_ARRAY_MAX_SIZE,
 				.type = ICU_BLADEOPEN_PARAM_TYPE,
 				.permissions = ICU_BLADEOPEN_PARAM_PERMISSIONS,
-				.data_ptr = &this->bladeopen_conf.out_conf
+				.data_ptr = &this->bladeopen_conf
 		},
 		{
 				.main_index = ICU_BLADEOPEN_CURRENT_INDEX,
@@ -78,7 +78,7 @@ canopen_object_st obj_dict[] = {
 				.array_max_size = ICU_FEEDOPEN_PARAM_ARRAY_MAX_SIZE,
 				.type = ICU_FEEDOPEN_PARAM_TYPE,
 				.permissions = ICU_FEEDOPEN_PARAM_PERMISSIONS,
-				.data_ptr = &this->feedopen_conf.out_conf
+				.data_ptr = &this->feedopen_conf
 		},
 		{
 				.main_index = ICU_FEEDOPEN_CURRENT_INDEX,
@@ -99,7 +99,7 @@ canopen_object_st obj_dict[] = {
 				.array_max_size = ICU_TILT_PARAM_ARRAY_MAX_SIZE,
 				.type = ICU_TILT_PARAM_TYPE,
 				.permissions = ICU_TILT_PARAM_PERMISSIONS,
-				.data_ptr = &this->tilt_conf.out_conf
+				.data_ptr = &this->tilt_conf
 		},
 		{
 				.main_index = ICU_TILT_CURRENT_INDEX,
@@ -120,7 +120,7 @@ canopen_object_st obj_dict[] = {
 				.array_max_size = ICU_SAW_PARAM_ARRAY_MAX_SIZE,
 				.type = ICU_SAW_PARAM_TYPE,
 				.permissions = ICU_SAW_PARAM_PERMISSIONS,
-				.data_ptr = &this->saw_conf.out_conf
+				.data_ptr = &this->saw_conf
 		},
 		{
 				.main_index = ICU_SAW_CURRENT_INDEX,
@@ -128,6 +128,41 @@ canopen_object_st obj_dict[] = {
 				.type = ICU_SAW_CURRENT_TYPE,
 				.permissions = ICU_SAW_CURRENT_PERMISSIONS,
 				.data_ptr = &this->saw.out.current
+		},
+		{
+				.main_index = ICU_FEED_REQ_INDEX,
+				.sub_index = ICU_FEED_REQ_SUBINDEX,
+				.type = ICU_FEED_REQ_TYPE,
+				.permissions = ICU_FEED_REQ_PERMISSIONS,
+				.data_ptr = &this->feed.input.request
+		},
+		{
+				.main_index = ICU_FEED_PARAM_INDEX,
+				.array_max_size = ICU_FEED_PARAM_ARRAY_MAX_SIZE,
+				.type = ICU_FEED_PARAM_TYPE,
+				.permissions = ICU_FEED_PARAM_PERMISSIONS,
+				.data_ptr = &this->feed_conf
+		},
+		{
+				.main_index = ICU_FEED_CURRENT_INDEX,
+				.sub_index = ICU_FEED_CURRENT_SUBINDEX,
+				.type = ICU_FEED_CURRENT_TYPE,
+				.permissions = ICU_FEED_CURRENT_PERMISSIONS,
+				.data_ptr = &this->feed.series_out.current
+		},
+		{
+				.main_index = ICU_ALLOPEN_REQ_INDEX,
+				.sub_index = ICU_ALLOPEN_REQ_SUBINDEX,
+				.type = ICU_ALLOPEN_REQ_TYPE,
+				.permissions = ICU_ALLOPEN_REQ_PERMISSIONS,
+				.data_ptr = &this->allopen.input.request
+		},
+		{
+				.main_index = ICU_ALLOPEN_PARAM_INDEX,
+				.array_max_size = ICU_ALLOPEN_PARAM_ARRAY_MAX_SIZE,
+				.type = ICU_ALLOPEN_PARAM_TYPE,
+				.permissions = ICU_ALLOPEN_PARAM_PERMISSIONS,
+				.data_ptr = &this->allopen_conf
 		},
 
 
@@ -190,7 +225,7 @@ const uv_command_st terminal_commands[] = {
 				.id = CMD_SET,
 				.str = "set",
 				.instructions = "Sets the configurations for output modules.\n"
-						"Usage: set <\"bladeopen\"/\"feedopen\"/\"feed\"/\"saw\"/\"tilt\"> "
+						"Usage: set <\"bladeopen\"/\"feedopen\"/\"feed\"/\"saw\"/\"tilt\"/\"allop\"> "
 						"<\"maxa\"/\"maxb\"/\"acc\"/\"dec\"/\"invert\">"
 						"<value>",
 				.callback = &set_callb
@@ -221,6 +256,9 @@ void stat_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 			saw_get_request(&this->saw),
 			saw_get_current(&this->saw),
 			saw_is_in(&this->saw));
+	printf("Feed: request: %i, current: %u\n",
+			feed_get_request(&this->feed),
+			feed_get_current(&this->feed));
 }
 
 
@@ -243,6 +281,12 @@ void set_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv)
 		}
 		else if (strcmp(str, "saw") == 0) {
 			conf = &this->saw_conf.out_conf;
+		}
+		else if (strcmp(str, "feed") == 0) {
+			conf = &this->feed_conf.out_conf;
+		}
+		else if (strcmp(str, "allo") == 0) {
+			conf = &this->allopen_conf.out_conf;
 		}
 		else {
 			printf("Unknown module '%s'\n", str);

@@ -18,7 +18,7 @@
 
 
 #include "remote_valve.h"
-
+#include "input.h"
 
 
 void remote_valve_init(remote_valve_st *this, uint16_t delay_time_ms, bool dual_dir) {
@@ -55,11 +55,11 @@ void remote_valve_set_request(remote_valve_st *this,
 	if (!this->drive_to_zero) {
 		int32_t req = (int32_t) request *
 				((request > 0) ? (int32_t) conf->max_speed_a : (int32_t) conf->max_speed_b) / 100;
-		if (req < INT8_MIN) {
-			req = INT8_MIN;
+		if (req < INPUT_MIN_REQ) {
+			req = INPUT_MIN_REQ;
 		}
-		if (req > INT8_MAX) {
-			req = INT8_MAX;
+		if (req > INPUT_MAX_REQ) {
+			req = INPUT_MAX_REQ;
 		}
 		request = req;
 		// todo: acc and dec as a PID controller

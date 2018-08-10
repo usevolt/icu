@@ -23,14 +23,15 @@
 #include "can_icu.h"
 #include "main.h"
 #include "pin_mappings.h"
+#include "feed.h"
 
 
 void tilt_conf_reset(tilt_conf_st *this) {
 	this->out_conf.acc = ICU_CONF_ACC_MAX;
 	this->out_conf.dec = ICU_CONF_DEC_MAX;
 	this->out_conf.invert = true;
-	this->out_conf.max_speed_a = ICU_CONF_SPEED_MAX;
-	this->out_conf.max_speed_b = ICU_CONF_SPEED_MAX;
+	this->out_conf.max_speed_a = 8;
+	this->out_conf.max_speed_b = 8;
 }
 
 
@@ -51,9 +52,15 @@ void tilt_step(tilt_st *this, uint16_t step_ms) {
 
 	uv_dual_output_set_invert(&this->out, this->conf->out_conf.invert);
 
-	uv_dual_output_set(&this->out, input_get_dir(&this->input));
+	int8_t req = input_get_request(&this->input);
 
-	remote_valve_set_request(&dev.impl1, this, input_get_request(&this->input), &this->conf->out_conf);
+	if (feed_get_request(&dev.feed)) {
+		req = 0;
+	}
+
+	uv_dual_output_set(&this->out, input_get_dir_from_req(req));
+
+	remote_valve_set_request(&dev.impl1, this, req, &this->conf->out_conf);
 
 }
 

@@ -41,6 +41,8 @@ typedef struct {
 
 	uv_dual_output_st out;
 
+	uv_dual_output_dir_e dir_req;
+
 	feedopen_conf_st *conf;
 
 } feedopen_st;
@@ -58,6 +60,10 @@ static inline int16_t feedopen_get_current(feedopen_st *this) {
 	return uv_dual_output_get_current(&this->out);
 }
 
+/// @brief: Sets the feedopen manual request
+static inline void feedopen_set_dir_req(feedopen_st *this, uv_dual_output_dir_e value) {
+	this->dir_req = value;
+}
 
 static inline int8_t feedopen_get_request(feedopen_st *this) {
 	return input_get_request(&this->input);

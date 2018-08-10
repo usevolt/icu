@@ -16,8 +16,8 @@
 */
 
 
-#ifndef INC_MODULES_SAW_H_
-#define INC_MODULES_SAW_H_
+#ifndef INC_MODULES_ALLOPEN_H_
+#define INC_MODULES_ALLOPEN_H_
 
 #include <uv_utilities.h>
 #include <uv_dual_solenoid_output.h>
@@ -26,65 +26,45 @@
 #include "input.h"
 
 
+
 /// @brief: Boom fold configuration settings. Should be stored in non-volatile memory
 typedef struct {
 	icu_conf_st out_conf;
-	// if 1, saw in dir is negative direction. Otherwise positive.
-	int16_t saw_in_dir_invert;
-} saw_conf_st;
+	// if 1, negative value is considered all-open and positive all-close
+	uint16_t dir_invert;
+
+	uint16_t close_delay_ms;
+} allopen_conf_st;
 
 /// @brief: Resets the non-volatile settings to defaults
-void saw_conf_reset(saw_conf_st *this);
+void allopen_conf_reset(allopen_conf_st *this);
 
-#define SAW_IN_DELAY_MS				4000
 
 typedef struct {
 	// input module from the CAN-bus
 	input_st input;
 
-	uv_dual_output_st out;
+	allopen_conf_st *conf;
 
-	uint8_t in;
-	bool saw_moved;
-	uv_delay_st in_delay;
+	uv_delay_st close_delay;
 
-	saw_conf_st *conf;
-
-} saw_st;
+} allopen_st;
 
 
 /// @brief: Initializes the module
-void saw_init(saw_st *this, saw_conf_st *conf_ptr);
+void allopen_init(allopen_st *this, allopen_conf_st *conf_ptr);
 
 
 /// @brief: Step function
-void saw_step(saw_st *this, uint16_t step_ms);
+void allopen_step(allopen_st *this, uint16_t step_ms);
 
 
-static inline int16_t saw_get_current(saw_st *this) {
-	return uv_dual_output_get_current(&this->out);
-}
 
-
-static inline int8_t saw_get_request(saw_st *this) {
+static inline int8_t allopen_get_request(allopen_st *this) {
 	return input_get_request(&this->input);
 }
 
 
-static inline void saw_disable(saw_st *this) {
-	uv_dual_output_disable(&this->out);
-	this->saw_moved = false;
-}
 
 
-static inline void saw_enable(saw_st *this) {
-	uv_dual_output_enable(&this->out);
-}
-
-
-static inline uint8_t saw_is_in(saw_st *this) {
-	return this->in;
-}
-
-
-#endif /* INC_MODULES_SAW_H_ */
+#endif /* INC_MODULES_ALLOPEN_H_ */

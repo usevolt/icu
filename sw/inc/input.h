@@ -23,6 +23,10 @@
 #include <uv_utilities.h>
 #include <uv_dual_output.h>
 
+
+#define INPUT_MAX_REQ	INT8_MAX
+#define INPUT_MIN_REQ	(INT8_MIN + 1)
+
 /// @brief: Module which converts raw variable input into pressed, released, etc actions
 
 /// @brief: If request was active for shorter time than this, consider it as a click
@@ -68,5 +72,12 @@ static inline int8_t input_get_request(input_st *this) {
 }
 
 uv_dual_output_dir_e input_get_dir(input_st *this);
+
+/// @brief: Returns the requested direction straight from request without input_st module
+static inline uv_dual_output_dir_e input_get_dir_from_req(int8_t req) {
+	input_st i;
+	i.request = req;
+	return input_get_dir(&i);
+}
 
 #endif /* INC_INPUT_H_ */

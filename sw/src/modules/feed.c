@@ -23,6 +23,8 @@
 #include "can_icu.h"
 #include "main.h"
 #include "pin_mappings.h"
+#include "saw.h"
+#include "tilt.h"
 
 
 void feed_conf_reset(feed_conf_st *this) {
@@ -48,8 +50,28 @@ void feed_init(feed_st *this, feed_conf_st *conf_ptr) {
 void feed_step(feed_st *this, uint16_t step_ms) {
 	input_step(&this->input, step_ms);
 
-	remote_valve_set_request(&dev.impl2, this,
-			input_get_request(&this->input) * ((this->conf->out_conf.invert) ? -1 : 1), &this->conf->out_conf);
+	int8_t req = 0;
+	bool series_feed = true;
+
+	if (!saw_is_in(&dev.saw)) {
+		req = 0;
+	}
+	else {
+		req = input_get_request(&this->input) * ((this->conf->out_conf.invert) ? -1 : 1);
+
+		if (tilt_get_request(&dev.tilt)) {
+			series_feed = false;
+		}
+	}
+
+
+
+	// series feeding
+	uv_output_set(&this->series_out, series_feed ? OUTPUT_STATE_OFF : OUTPUT_STATE_ON);
+
+	uv_output_step(&this->series_out, step_ms);
+
+	remote_valve_set_request(&dev.impl2, this, req, &this->conf->out_conf);
 
 }
 

@@ -39,6 +39,9 @@ typedef struct {
 	// input module from the CAN-bus
 	input_st input;
 
+	// manual request
+	uv_dual_output_dir_e dir_req;
+
 	uv_dual_output_st out;
 
 	bladeopen_conf_st *conf;
@@ -61,6 +64,11 @@ static inline int16_t bladeopen_get_current(bladeopen_st *this) {
 
 static inline int8_t bladeopen_get_request(bladeopen_st *this) {
 	return input_get_request(&this->input);
+}
+
+/// @brief: Sets the bladeopen manual request
+static inline void bladeopen_set_dir_req(bladeopen_st *this, uv_dual_output_dir_e value) {
+	this->dir_req = value;
 }
 
 

@@ -35,10 +35,12 @@ void init(dev_st* me) {
 	if (uv_memory_load()) {
 		printf("*****\nresetting defaults\n*****\n");
 
+		allopen_conf_reset(&this->allopen_conf);
 		bladeopen_conf_reset(&this->bladeopen_conf);
 		feedopen_conf_reset(&this->feedopen_conf);
 		saw_conf_reset(&this->saw_conf);
 		tilt_conf_reset(&this->tilt_conf);
+		feed_conf_reset(&this->feed_conf);
 
 		uv_memory_save();
 	}
@@ -57,7 +59,8 @@ void init(dev_st* me) {
 	feedopen_init(&this->feedopen, &this->feedopen_conf);
 	saw_init(&this->saw, &this->saw_conf);
 	tilt_init(&this->tilt, &this->tilt_conf);
-
+	feed_init(&this->feed, &this->feed_conf);
+	allopen_init(&this->allopen, &this->allopen_conf);
 
 	uv_gpio_interrupt_init(&gpio_callback);
 
@@ -89,23 +92,24 @@ void step(void* me) {
 		feedopen_step(&this->feedopen, step_ms);
 		saw_step(&this->saw, step_ms);
 		tilt_step(&this->tilt, step_ms);
+		feed_step(&this->feed, step_ms);
+		allopen_step(&this->allopen, step_ms);
 
 		remote_valve_step(&this->impl1, step_ms);
 		remote_valve_step(&this->impl2, step_ms);
 
-		this->total_current = 0;
+		this->total_current = abs(bladeopen_get_current(&this->bladeopen)) +
+				abs(feedopen_get_current(&this->feedopen)) +
+				abs(saw_get_current(&this->saw)) +
+				abs(tilt_get_current(&this->tilt)) +
+				abs(feed_get_current(&this->feed));
 
-		// if FSB, left keypad or right keypad heartbeat message is not received in a given time,
-		// it indicates that FSB is not in the system. As FSB takes care of the EMCY switch,
-		// the best practice would be to assume that the EMCY switch is turned on.
-//		if (uv_canopen_heartbeat_producer_is_expired(FSB_NODE_ID)) {
-//			this->fsb.ignkey_state = FSB_IGNKEY_STATE_OFF;
-//			this->fsb.emcy = 1;
-//		}
 
 		// outputs are disables if FSB is not found, ignition key is not in ON state,
 		// or emergency switch is pressed
 		if (uv_canopen_heartbeat_producer_is_expired(FSB_NODE_ID) ||
+				uv_canopen_heartbeat_producer_is_expired(RKEYPAD_NODE_ID) ||
+				uv_canopen_heartbeat_producer_is_expired(LKEYPAD_NODE_ID) ||
 				(this->fsb.ignkey_state != FSB_IGNKEY_STATE_ON) ||
 				this->fsb.emcy ||
 				!this->fsb.seat_sw) {
@@ -114,6 +118,7 @@ void step(void* me) {
 			feedopen_disable(&this->feedopen);
 			saw_disable(&this->saw);
 			tilt_disable(&this->tilt);
+			feed_disable(&this->feed);
 		}
 		else {
 			// enable outputs
@@ -121,6 +126,7 @@ void step(void* me) {
 			feedopen_enable(&this->feedopen);
 			saw_enable(&this->saw);
 			tilt_enable(&this->tilt);
+			feed_enable(&this->feed);
 		}
 
 		uv_rtos_task_delay(step_ms);

@@ -73,6 +73,11 @@ void remote_valve_set_request(remote_valve_st *this,
 		void *requester, int8_t request, icu_conf_st *conf);
 
 
+static inline int8_t remote_valve_get_request(remote_valve_st *this) {
+	return this->req;
+}
+
+
 void remote_valve_drive_to_zero(remote_valve_st *this);
 
 /// @brief: Returns true after the **remote_valve_drive_to_zero** request has called and
