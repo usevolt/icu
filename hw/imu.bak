@@ -15,10 +15,10 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L usevolt:IMU_LSM6DS3USTR U?
+L usevolt:IMU_LSM6DS3USTR U1101
 U 1 1 5B4364A3
 P 5500 3600
-F 0 "U?" H 5525 4125 50  0000 C CNN
+F 0 "U1101" H 5525 4125 50  0000 C CNN
 F 1 "IMU_LSM6DS3USTR" H 5525 4034 50  0000 C CNN
 F 2 "usevolt:LGA-14" H 5500 3950 50  0001 C CNN
 F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/group0/2e/84/27/34/60/8d/49/f2/DM00237513/files/DM00237513.pdf/jcr:content/translations/en.DM00237513.pdf" H 5500 3950 50  0001 C CNN
@@ -30,10 +30,10 @@ F 7 "497-16910-1-ND" H 5900 4400 50  0001 C CNN "1st Source Part Number"
 	1    0    0    -1  
 $EndComp
 $Comp
-L icu-rescue:100nF C?
+L icu-rescue:100nF C1101
 U 1 1 5B43661A
 P 4650 3400
-F 0 "C?" V 4658 3473 45  0000 L CNN
+F 0 "C1101" V 4658 3473 45  0000 L CNN
 F 1 "100nF" V 4742 3473 45  0000 L CNN
 F 2 "kemet:0603" H 4680 3550 20  0001 C CNN
 F 3 "http://www.farnell.com/datasheets/2062872.pdf?_ga=1.250530118.1948984246.1460023966" H 4554 3409 60  0001 C CNN
@@ -63,10 +63,10 @@ Connection ~ 4950 3300
 Wire Wire Line
 	4950 3300 4650 3300
 $Comp
-L icu-rescue:+3V3 #PWR?
+L icu-rescue:+3V3 #PWR0102
 U 1 1 5B436738
 P 4650 3250
-F 0 "#PWR?" H 4650 3100 50  0001 C CNN
+F 0 "#PWR0102" H 4650 3100 50  0001 C CNN
 F 1 "+3V3" H 4665 3423 50  0000 C CNN
 F 2 "" H 4650 3250 50  0000 C CNN
 F 3 "" H 4650 3250 50  0000 C CNN
@@ -77,10 +77,10 @@ Wire Wire Line
 	4650 3250 4650 3300
 Connection ~ 4650 3300
 $Comp
-L icu-rescue:GND #PWR?
+L icu-rescue:GND #PWR0103
 U 1 1 5B4367F7
 P 4650 3650
-F 0 "#PWR?" H 4650 3400 50  0001 C CNN
+F 0 "#PWR0103" H 4650 3400 50  0001 C CNN
 F 1 "GND" H 4655 3477 50  0000 C CNN
 F 2 "" H 4650 3650 50  0000 C CNN
 F 3 "" H 4650 3650 50  0000 C CNN

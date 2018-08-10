@@ -22,11 +22,7 @@ int obj_dict_len();
 /// @brief: Lists all gsm commands
 typedef enum {
 	CMD_STAT = 0,
-	CMD_OUT,
-	CMD_CMD,
-	CMD_ALL_OPEN,
-	CMD_FEED,
-	CMD_SAW,
+	CMD_SET,
 	CMD_COUNT
 } gsm_commands_e;
 

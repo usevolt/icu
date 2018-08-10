@@ -28,6 +28,7 @@ BINARY := icu
 
 # List of include directories
 INCLUDEDIRS := 	-I"inc/" \
+				-I"inc/modules/" \
 				-I"uw_can/" \
 				-I"hal/uv_hal/inc" \
 				-I"hal/uv_hal/inc/output" \
@@ -36,6 +37,7 @@ INCLUDEDIRS := 	-I"inc/" \
 				-I"hal/uv_hal/freertos/portable/GCC/ARM_CM3"
 				
 SOURCEDIRS := src \
+				src/modules \
 				hal/uv_hal/src \
 				hal/uv_hal/freertos \
 				hal/uv_hal/src/canopen \

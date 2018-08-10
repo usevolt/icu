@@ -21,10 +21,9 @@
 
 
 
-void remote_valve_init(remote_valve_st *this, uint16_t delay_time_ms, uv_mutex_st *mutex, bool dual_dir) {
-	this->mutex = mutex;
+void remote_valve_init(remote_valve_st *this, uint16_t delay_time_ms, bool dual_dir) {
 	this->delay_time_ms = delay_time_ms;
-	this->req_ma = 0;
+	this->req = 0;
 	this->stopped = true;
 	this->drive_to_zero = false;
 	this->dual_dir = dual_dir;
@@ -35,41 +34,41 @@ void remote_valve_init(remote_valve_st *this, uint16_t delay_time_ms, uv_mutex_s
 void remote_valve_step(remote_valve_st *this, uint16_t step_ms) {
 
 	if (this->drive_to_zero) {
-		uv_mutex_lock(this->mutex);
 
-		this->req_ma = 0;
+		this->req = 0;
 		if (uv_delay(&this->delay, step_ms)) {
 			this->drive_to_zero = 0;
 			this->requester_priority_ptr = NULL;
 			this->stopped = 1;
 		}
 
-		uv_mutex_unlock(this->mutex);
 	}
 
 }
 
 
-void remote_valve_set_request(remote_valve_st *this, void *requester, int16_t request_ma) {
-	uv_mutex_lock(this->mutex);
+void remote_valve_set_request(remote_valve_st *this,
+		void *requester, int8_t request, icu_conf_st *conf) {
+
+
 	// only accept higher request than the last one
 	if ((uint32_t) requester >= (uint32_t) this->requester_priority_ptr) {
 		if (!this->drive_to_zero) {
-				this->requester_priority_ptr = (request_ma == 0) ? NULL : requester;
-				this->req_ma = (this->dual_dir) ? request_ma : abs(request_ma);
+				request = request * ((request > 0) ? conf->max_speed_a : conf->max_speed_b) / 100;
+				// todo: acc and dec as a PID controller
+
+				this->requester_priority_ptr = (request == 0) ? NULL : requester;
+				this->req = (this->dual_dir) ? request : abs(request);
 		}
 	}
-	uv_mutex_unlock(this->mutex);
 }
 
 
 
 void remote_valve_drive_to_zero(remote_valve_st *this) {
-	uv_mutex_lock(this->mutex);
 	if (!this->drive_to_zero) {
 		this->drive_to_zero = true;
 		this->stopped = false;
 		uv_delay_init(&this->delay, this->delay_time_ms);
 	}
-	uv_mutex_unlock(this->mutex);
 }

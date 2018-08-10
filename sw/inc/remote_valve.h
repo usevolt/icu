@@ -20,20 +20,38 @@
 #define REMOTE_VALVE_H_
 
 
+#include <uv_utilities.h>
+
+
 /// @file: Remote valve module is an hydraulic valve which is controlled over CAN-bus,
 /// such as impl1 and impl2 valves supplying the oil flow to harvester head.
 
 
+#define ICU_CONF_ACC_MAX	100
+#define ICU_CONF_DEC_MAX	100
+#define ICU_CONF_SPEED_MAX	100
+
+/// @brief: Configuration module for general ICU modules.
+typedef struct {
+	// max speed in forward direction, from 0 ... 100
+	uint16_t max_speed_a;
+	uint16_t max_speed_b;
+	uint16_t invert;
+	// from 0 ... 100
+	uint16_t acc;
+	// from 0 ... 100
+	uint16_t dec;
+} icu_conf_st;
+
+
 #include <uv_utilities.h>
-#include <uv_rtos.h>
 
 typedef struct {
 	bool drive_to_zero;
 	bool stopped;
 	uv_delay_st delay;
 	uint16_t delay_time_ms;
-	int16_t req_ma;
-	uv_mutex_st *mutex;
+	int8_t req;
 	bool dual_dir;
 	// stores the pointer of the requester. This pointer
 	// is used as priority. If two or more requesters make a request
@@ -42,15 +60,17 @@ typedef struct {
 } remote_valve_st;
 
 
-void remote_valve_init(remote_valve_st *this, uint16_t delay_time_ms, uv_mutex_st *mutex, bool dual_dir);
+void remote_valve_init(remote_valve_st *this, uint16_t delay_time_ms, bool dual_dir);
 
 
 void remote_valve_step(remote_valve_st *this, uint16_t step_ms);
 
 
-/// @brief: Sets the oil flow request in milliamps. The request is accepted only if
-/// the last request was zero or bigger than new one.
-void remote_valve_set_request(remote_valve_st *this, void *requester, int16_t request_ma);
+/// @brief: Sets the oil flow request in relative value. The request is accepted only if
+/// the last request was zero or bigger than new one. The actual request is calculated with
+/// scaled with **conf** parameters, if given.
+void remote_valve_set_request(remote_valve_st *this,
+		void *requester, int8_t request, icu_conf_st *conf);
 
 
 void remote_valve_drive_to_zero(remote_valve_st *this);

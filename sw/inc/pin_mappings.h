@@ -15,62 +15,34 @@
 #include <uv_adc.h>
 
 
-// Analog inputs
-#define AIN1	ADC0_3
-#define AIN2	ADC0_4
-#define AIN3	ADC0_8
-#define AIN4	ADC0_9
-#define OUT1_SENSE	ADC1_11
-#define OUT2_SENSE	ADC1_10
-#define OUT3_SENSE	ADC1_8
-#define OUT4_SENSE	ADC1_9
-#define OUT5_SENSE	ADC1_5
-#define OUT6_SENSE	ADC0_1
-#define OUT7_SENSE	ADC0_0
+#define WIDTH1_AIN		ADC0_3
+#define WIDTH2_AIN		ADC0_4
 
-// Digital inputs
-#define DIN1	P0_30
-#define DIN2	P0_28
-#define DIN3	P0_27
-#define DIN4	P1_7
-#define DIN5	P0_5
-
-// Digital outputs
-#define OUT1_A	P0_24
-#define OUT1_B	P1_8
-#define OUT2_A	P0_29
-#define OUT2_B	P0_26
-#define OUT3_A	P0_1
-#define OUT3_B	P0_0
-#define OUT4_A	P0_3
-#define OUT4_B	P0_2
-#define OUT5_A	P0_14
-#define OUT5_B	P0_6
-#define OUT6_A	P0_10
-#define OUT6_B	P0_12
-#define OUT7_A	P0_18
-#define OUT7_B	P0_9
+#define SAW_IN			P0_30
+#define LEN_IN			P0_28
 
 
-#define BLADES_OPEN_OUT		1
-#define FEED_OPEN_OUT		2
-#define TILT_OUT			0
-#define FEED_SAW_OUT		3
-#define SAW_MOVE_OUT		4
-#define SAW_IN_DIR			DUAL_OUTPUT_NEG
-#define SAW_OUT_DIR			DUAL_OUTPUT_POS
-#define FEED_SERIES_DIR		DUAL_OUTPUT_NEG
-#define SAW_DIR				DUAL_OUTPUT_POS
+#define BLADEOPEN_A		P0_24
+#define BLADEOPEN_B		P1_8
+#define BLADEOPEN_SENSE	ADC1_11
+
+#define FEEDOPEN_A		P0_29
+#define FEEDOPEN_B		P0_26
+#define FEEDOPEN_SENSE	ADC1_10
+
+#define TILT_A			P0_1
+#define TILT_B			P0_0
+#define TILT_SENSE		ADC1_8
+
+#define SAW_A			P0_0
+#define SAW_B			P0_31
+#define SAW_SENSE		ADC0_11
+
+#define FEED_A			P0_3
+#define FEED_B			P0_2
+#define FEED_SENSE		ADC1_9
 
 
-
-typedef struct {
-	uv_adc_channels_e adc;
-	uv_gpios_e gpioa;
-	uv_gpios_e gpiob;
-} out_st;
-
-out_st outs[7];
 
 
 #endif /* UW_MB_SRC_PIN_MAPPINGS_H_ */
