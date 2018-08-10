@@ -38,6 +38,9 @@ void saw_init(saw_st *this, saw_conf_st *conf_ptr) {
 	input_init(&this->input);
 	this->conf = conf_ptr;
 
+	this->in = 0;
+	uv_gpio_init_input(SAW_IN, PULL_DOWN_ENABLED);
+
 	uv_dual_output_init(&this->out, SAW_A, SAW_B, SAW_SENSE,
 			VND5050_CURRENT_AMPL_UA, SOLENOID_MAX_CURRENT_MA,
 			SOLENOID_FAULT_CURRENT_MA, SOLENOID_AVG_COUNT,
@@ -49,11 +52,13 @@ void saw_init(saw_st *this, saw_conf_st *conf_ptr) {
 void saw_step(saw_st *this, uint16_t step_ms) {
 	input_step(&this->input, step_ms);
 
+	this->in = uv_gpio_get(SAW_IN);
+
 	uv_dual_output_set_invert(&this->out, this->conf->out_conf.invert);
 
 	uv_dual_output_set(&this->out, input_get_dir(&this->input));
 
-	remote_valve_set_request(&dev.impl1, this, input_get_request(&this->input), NULL);
+	remote_valve_set_request(&dev.impl1, this, input_get_request(&this->input), &this->conf->out_conf);
 
 }
 

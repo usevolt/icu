@@ -66,6 +66,69 @@ canopen_object_st obj_dict[] = {
 				.permissions = ICU_BLADEOPEN_CURRENT_PERMISSIONS,
 				.data_ptr = &this->bladeopen.out.current
 		},
+		{
+				.main_index = ICU_FEEDOPEN_REQ_INDEX,
+				.sub_index = ICU_FEEDOPEN_REQ_SUBINDEX,
+				.type = ICU_FEEDOPEN_REQ_TYPE,
+				.permissions = ICU_FEEDOPEN_REQ_PERMISSIONS,
+				.data_ptr = &this->feedopen.input.request
+		},
+		{
+				.main_index = ICU_FEEDOPEN_PARAM_INDEX,
+				.array_max_size = ICU_FEEDOPEN_PARAM_ARRAY_MAX_SIZE,
+				.type = ICU_FEEDOPEN_PARAM_TYPE,
+				.permissions = ICU_FEEDOPEN_PARAM_PERMISSIONS,
+				.data_ptr = &this->feedopen_conf.out_conf
+		},
+		{
+				.main_index = ICU_FEEDOPEN_CURRENT_INDEX,
+				.sub_index = ICU_FEEDOPEN_CURRENT_SUBINDEX,
+				.type = ICU_FEEDOPEN_CURRENT_TYPE,
+				.permissions = ICU_FEEDOPEN_CURRENT_PERMISSIONS,
+				.data_ptr = &this->feedopen.out.current
+		},
+		{
+				.main_index = ICU_TILT_REQ_INDEX,
+				.sub_index = ICU_TILT_REQ_SUBINDEX,
+				.type = ICU_TILT_REQ_TYPE,
+				.permissions = ICU_TILT_REQ_PERMISSIONS,
+				.data_ptr = &this->tilt.input.request
+		},
+		{
+				.main_index = ICU_TILT_PARAM_INDEX,
+				.array_max_size = ICU_TILT_PARAM_ARRAY_MAX_SIZE,
+				.type = ICU_TILT_PARAM_TYPE,
+				.permissions = ICU_TILT_PARAM_PERMISSIONS,
+				.data_ptr = &this->tilt_conf.out_conf
+		},
+		{
+				.main_index = ICU_TILT_CURRENT_INDEX,
+				.sub_index = ICU_TILT_CURRENT_SUBINDEX,
+				.type = ICU_TILT_CURRENT_TYPE,
+				.permissions = ICU_TILT_CURRENT_PERMISSIONS,
+				.data_ptr = &this->tilt.out.current
+		},
+		{
+				.main_index = ICU_SAW_REQ_INDEX,
+				.sub_index = ICU_SAW_REQ_SUBINDEX,
+				.type = ICU_SAW_REQ_TYPE,
+				.permissions = ICU_SAW_REQ_PERMISSIONS,
+				.data_ptr = &this->saw.input.request
+		},
+		{
+				.main_index = ICU_SAW_PARAM_INDEX,
+				.array_max_size = ICU_SAW_PARAM_ARRAY_MAX_SIZE,
+				.type = ICU_SAW_PARAM_TYPE,
+				.permissions = ICU_SAW_PARAM_PERMISSIONS,
+				.data_ptr = &this->saw_conf.out_conf
+		},
+		{
+				.main_index = ICU_SAW_CURRENT_INDEX,
+				.sub_index = ICU_SAW_CURRENT_SUBINDEX,
+				.type = ICU_SAW_CURRENT_TYPE,
+				.permissions = ICU_SAW_CURRENT_PERMISSIONS,
+				.data_ptr = &this->saw.out.current
+		},
 
 
 		// other node's parameters
@@ -142,13 +205,22 @@ unsigned int commands_size(void) {
 }
 
 
-
 void stat_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv) {
 	printf("SYSTEM STATUS:\n");
 	printf("Total current: %u mA\n", (unsigned int) this->total_current);
 	printf("Blade open: request: %i, current: %u\n",
 			bladeopen_get_request(&this->bladeopen),
 			bladeopen_get_current(&this->bladeopen));
+	printf("Feed open: request: %i, current: %u\n",
+			feedopen_get_request(&this->feedopen),
+			feedopen_get_current(&this->feedopen));
+	printf("Tilt: request: %i, current: %u\n",
+			tilt_get_request(&this->tilt),
+			tilt_get_current(&this->tilt));
+	printf("Saw: request: %i, current: %u In: %u\n",
+			saw_get_request(&this->saw),
+			saw_get_current(&this->saw),
+			saw_is_in(&this->saw));
 }
 
 
@@ -162,6 +234,15 @@ void set_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv)
 
 		if (strcmp(str, "bladeopen") == 0) {
 			conf = &this->bladeopen_conf.out_conf;
+		}
+		else if (strcmp(str, "feedopen") == 0) {
+			conf = &this->feedopen_conf.out_conf;
+		}
+		else if (strcmp(str, "tilt") == 0) {
+			conf = &this->tilt_conf.out_conf;
+		}
+		else if (strcmp(str, "saw") == 0) {
+			conf = &this->saw_conf.out_conf;
 		}
 		else {
 			printf("Unknown module '%s'\n", str);

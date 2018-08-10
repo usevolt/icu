@@ -16,6 +16,9 @@
 #include <uv_rtos.h>
 #include "remote_valve.h"
 #include "bladeopen.h"
+#include "feedopen.h"
+#include "tilt.h"
+#include "saw.h"
 
 #define VND5050_CURRENT_AMPL_UA			1619
 #define VN5E01_CURRENT_AMPL_UA			13923
@@ -42,7 +45,11 @@ typedef struct _dev_st {
 
 	uint16_t total_current;
 
+	// the priority order is determined by the order of modules here. First one is the least priority.
 	bladeopen_st bladeopen;
+	feedopen_st feedopen;
+	saw_st saw;
+	tilt_st tilt;
 
 	// impl1 is for blades, feed open & tilt
 	remote_valve_st impl1;
@@ -52,6 +59,9 @@ typedef struct _dev_st {
 	uv_data_start_t data_start;
 
 	bladeopen_conf_st bladeopen_conf;
+	feedopen_conf_st feedopen_conf;
+	saw_conf_st saw_conf;
+	tilt_conf_st tilt_conf;
 
 	uv_data_end_t data_end;
 

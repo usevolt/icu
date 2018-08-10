@@ -26,21 +26,20 @@
 #define BLADEOPEN_B		P1_8
 #define BLADEOPEN_SENSE	ADC1_11
 
-#define FEEDOPEN_A		P0_29
-#define FEEDOPEN_B		P0_26
-#define FEEDOPEN_SENSE	ADC1_10
+#define SAW_A			P0_29
+#define SAW_B			P0_26
+#define SAW_SENSE		ADC1_10
 
 #define TILT_A			P0_1
 #define TILT_B			P0_0
 #define TILT_SENSE		ADC1_8
 
-#define SAW_A			P0_0
-#define SAW_B			P0_31
-#define SAW_SENSE		ADC0_11
+#define FEEDOPEN_A		P0_3
+#define FEEDOPEN_B		P0_2
+#define FEEDOPEN_SENSE	ADC1_9
 
-#define FEED_A			P0_3
-#define FEED_B			P0_2
-#define FEED_SENSE		ADC1_9
+#define FEED_SERIES		P0_18
+#define FEED_SENSE		ADC0_0
 
 
 

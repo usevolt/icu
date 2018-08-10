@@ -62,7 +62,7 @@ static inline bool input_clicked(input_st *this) {
 	return this->clicked;
 }
 
-/// @brief: Returns the input request in scale of -1000 ... 1000
+/// @brief: Returns the input request in scale of INT8_MIN ... INT8_MAX
 static inline int8_t input_get_request(input_st *this) {
 	return this->request;
 }

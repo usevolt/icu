@@ -36,6 +36,9 @@ void init(dev_st* me) {
 		printf("*****\nresetting defaults\n*****\n");
 
 		bladeopen_conf_reset(&this->bladeopen_conf);
+		feedopen_conf_reset(&this->feedopen_conf);
+		saw_conf_reset(&this->saw_conf);
+		tilt_conf_reset(&this->tilt_conf);
 
 		uv_memory_save();
 	}
@@ -51,6 +54,10 @@ void init(dev_st* me) {
 	remote_valve_init(&this->impl2, REMOTE_VALVE_DELAY_MS, true);
 
 	bladeopen_init(&this->bladeopen, &this->bladeopen_conf);
+	feedopen_init(&this->feedopen, &this->feedopen_conf);
+	saw_init(&this->saw, &this->saw_conf);
+	tilt_init(&this->tilt, &this->tilt_conf);
+
 
 	uv_gpio_interrupt_init(&gpio_callback);
 
@@ -79,6 +86,9 @@ void step(void* me) {
 		uv_terminal_step();
 
 		bladeopen_step(&this->bladeopen, step_ms);
+		feedopen_step(&this->feedopen, step_ms);
+		saw_step(&this->saw, step_ms);
+		tilt_step(&this->tilt, step_ms);
 
 		remote_valve_step(&this->impl1, step_ms);
 		remote_valve_step(&this->impl2, step_ms);
@@ -101,10 +111,16 @@ void step(void* me) {
 				!this->fsb.seat_sw) {
 			// disable all outputs
 			bladeopen_disable(&this->bladeopen);
+			feedopen_disable(&this->feedopen);
+			saw_disable(&this->saw);
+			tilt_disable(&this->tilt);
 		}
 		else {
 			// enable outputs
 			bladeopen_enable(&this->bladeopen);
+			feedopen_enable(&this->feedopen);
+			saw_enable(&this->saw);
+			tilt_enable(&this->tilt);
 		}
 
 		uv_rtos_task_delay(step_ms);

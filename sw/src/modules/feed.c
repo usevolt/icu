@@ -19,13 +19,13 @@
 
 
 
-#include "../../inc/modules/bladeopen.h"
+#include "../../inc/modules/feed.h"
 #include "can_icu.h"
 #include "main.h"
 #include "pin_mappings.h"
 
 
-void bladeopen_conf_reset(bladeopen_conf_st *this) {
+void feed_conf_reset(feed_conf_st *this) {
 	this->out_conf.acc = ICU_CONF_ACC_MAX;
 	this->out_conf.dec = ICU_CONF_DEC_MAX;
 	this->out_conf.invert = true;
@@ -34,26 +34,22 @@ void bladeopen_conf_reset(bladeopen_conf_st *this) {
 }
 
 
-void bladeopen_init(bladeopen_st *this, bladeopen_conf_st *conf_ptr) {
+void feed_init(feed_st *this, feed_conf_st *conf_ptr) {
 	input_init(&this->input);
 	this->conf = conf_ptr;
 
-	uv_dual_output_init(&this->out, BLADEOPEN_A, BLADEOPEN_B, BLADEOPEN_SENSE,
-			VND5050_CURRENT_AMPL_UA, SOLENOID_MAX_CURRENT_MA,
-			SOLENOID_FAULT_CURRENT_MA, SOLENOID_AVG_COUNT,
-			ICU_EMCY_BLADEOPEN_OVERCURRENT, ICU_EMCY_BLADEOPEN_FAULT);
+	uv_output_init(&this->series_out, FEED_SENSE, FEED_SERIES,
+			VND5050_CURRENT_AMPL_UA, 5000, 8000, SOLENOID_AVG_COUNT,
+			ICU_EMCY_FEEDSERIES_OVERCURRENT, ICU_EMCY_FEEDSERIES_FAULT);
 
 }
 
 
-void bladeopen_step(bladeopen_st *this, uint16_t step_ms) {
+void feed_step(feed_st *this, uint16_t step_ms) {
 	input_step(&this->input, step_ms);
 
-	uv_dual_output_set_invert(&this->out, this->conf->out_conf.invert);
-
-	uv_dual_output_set(&this->out, input_get_dir(&this->input));
-
-	remote_valve_set_request(&dev.impl1, this, input_get_request(&this->input), &this->conf->out_conf);
+	remote_valve_set_request(&dev.impl2, this,
+			input_get_request(&this->input) * ((this->conf->out_conf.invert) ? -1 : 1), &this->conf->out_conf);
 
 }
 

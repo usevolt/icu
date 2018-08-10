@@ -52,14 +52,31 @@ void remote_valve_set_request(remote_valve_st *this,
 
 
 	// only accept higher request than the last one
-	if ((uint32_t) requester >= (uint32_t) this->requester_priority_ptr) {
-		if (!this->drive_to_zero) {
-				request = request * ((request > 0) ? conf->max_speed_a : conf->max_speed_b) / 100;
-				// todo: acc and dec as a PID controller
-
-				this->requester_priority_ptr = (request == 0) ? NULL : requester;
-				this->req = (this->dual_dir) ? request : abs(request);
+	if (!this->drive_to_zero) {
+		int32_t req = (int32_t) request *
+				((request > 0) ? (int32_t) conf->max_speed_a : (int32_t) conf->max_speed_b) / 100;
+		if (req < INT8_MIN) {
+			req = INT8_MIN;
 		}
+		if (req > INT8_MAX) {
+			req = INT8_MAX;
+		}
+		request = req;
+		// todo: acc and dec as a PID controller
+
+		if ((int32_t) requester == (int32_t) this->requester_priority_ptr) {
+			this->requester_priority_ptr = (request == 0) ? NULL : requester;
+			this->req = (this->dual_dir) ? request : abs(request);
+		}
+		else if (((int32_t) requester > (int32_t) this->requester_priority_ptr) &&
+				(request != 0)) {
+			this->requester_priority_ptr = requester;
+			this->req = (this->dual_dir) ? request : abs(request);
+		}
+		else {
+
+		}
+
 	}
 }
 

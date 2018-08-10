@@ -19,13 +19,13 @@
 
 
 
-#include "../../inc/modules/bladeopen.h"
+#include "../../inc/modules/tilt.h"
 #include "can_icu.h"
 #include "main.h"
 #include "pin_mappings.h"
 
 
-void bladeopen_conf_reset(bladeopen_conf_st *this) {
+void tilt_conf_reset(tilt_conf_st *this) {
 	this->out_conf.acc = ICU_CONF_ACC_MAX;
 	this->out_conf.dec = ICU_CONF_DEC_MAX;
 	this->out_conf.invert = true;
@@ -34,19 +34,19 @@ void bladeopen_conf_reset(bladeopen_conf_st *this) {
 }
 
 
-void bladeopen_init(bladeopen_st *this, bladeopen_conf_st *conf_ptr) {
+void tilt_init(tilt_st *this, tilt_conf_st *conf_ptr) {
 	input_init(&this->input);
 	this->conf = conf_ptr;
 
-	uv_dual_output_init(&this->out, BLADEOPEN_A, BLADEOPEN_B, BLADEOPEN_SENSE,
+	uv_dual_output_init(&this->out, TILT_A, TILT_B, TILT_SENSE,
 			VND5050_CURRENT_AMPL_UA, SOLENOID_MAX_CURRENT_MA,
 			SOLENOID_FAULT_CURRENT_MA, SOLENOID_AVG_COUNT,
-			ICU_EMCY_BLADEOPEN_OVERCURRENT, ICU_EMCY_BLADEOPEN_FAULT);
+			ICU_EMCY_TILT_OVERCURRENT, ICU_EMCY_TILT_FAULT);
 
 }
 
 
-void bladeopen_step(bladeopen_st *this, uint16_t step_ms) {
+void tilt_step(tilt_st *this, uint16_t step_ms) {
 	input_step(&this->input, step_ms);
 
 	uv_dual_output_set_invert(&this->out, this->conf->out_conf.invert);

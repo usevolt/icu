@@ -16,8 +16,8 @@
 */
 
 
-#ifndef INC_MODULES_SAW_H_
-#define INC_MODULES_SAW_H_
+#ifndef INC_MODULES_TILT_H_
+#define INC_MODULES_TILT_H_
 
 #include <uv_utilities.h>
 #include <uv_dual_solenoid_output.h>
@@ -29,10 +29,10 @@
 /// @brief: Boom fold configuration settings. Should be stored in non-volatile memory
 typedef struct {
 	icu_conf_st out_conf;
-} saw_conf_st;
+} tilt_conf_st;
 
 /// @brief: Resets the non-volatile settings to defaults
-void saw_conf_reset(saw_conf_st *this);
+void tilt_conf_reset(tilt_conf_st *this);
 
 
 typedef struct {
@@ -41,44 +41,37 @@ typedef struct {
 
 	uv_dual_output_st out;
 
-	uint8_t in;
+	tilt_conf_st *conf;
 
-	saw_conf_st *conf;
-
-} saw_st;
+} tilt_st;
 
 
 /// @brief: Initializes the module
-void saw_init(saw_st *this, saw_conf_st *conf_ptr);
+void tilt_init(tilt_st *this, tilt_conf_st *conf_ptr);
 
 
 /// @brief: Step function
-void saw_step(saw_st *this, uint16_t step_ms);
+void tilt_step(tilt_st *this, uint16_t step_ms);
 
 
-static inline int16_t saw_get_current(saw_st *this) {
+static inline int16_t tilt_get_current(tilt_st *this) {
 	return uv_dual_output_get_current(&this->out);
 }
 
 
-static inline int8_t saw_get_request(saw_st *this) {
+static inline int8_t tilt_get_request(tilt_st *this) {
 	return input_get_request(&this->input);
 }
 
 
-static inline void saw_disable(saw_st *this) {
+static inline void tilt_disable(tilt_st *this) {
 	uv_dual_output_disable(&this->out);
 }
 
 
-static inline void saw_enable(saw_st *this) {
+static inline void tilt_enable(tilt_st *this) {
 	uv_dual_output_enable(&this->out);
 }
 
 
-static inline uint8_t saw_is_in(saw_st *this) {
-	return this->in;
-}
-
-
-#endif /* INC_MODULES_SAW_H_ */
+#endif /* INC_MODULES_TILT_H_ */

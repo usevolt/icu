@@ -16,8 +16,8 @@
 */
 
 
-#ifndef INC_MODULES_SAW_H_
-#define INC_MODULES_SAW_H_
+#ifndef INC_MODULES_FEED_H_
+#define INC_MODULES_FEED_H_
 
 #include <uv_utilities.h>
 #include <uv_dual_solenoid_output.h>
@@ -29,56 +29,50 @@
 /// @brief: Boom fold configuration settings. Should be stored in non-volatile memory
 typedef struct {
 	icu_conf_st out_conf;
-} saw_conf_st;
+} feed_conf_st;
 
 /// @brief: Resets the non-volatile settings to defaults
-void saw_conf_reset(saw_conf_st *this);
+void feed_conf_reset(feed_conf_st *this);
 
 
 typedef struct {
 	// input module from the CAN-bus
 	input_st input;
 
-	uv_dual_output_st out;
+	uv_output_st series_out;
 
-	uint8_t in;
+	feed_conf_st *conf;
 
-	saw_conf_st *conf;
-
-} saw_st;
+} feed_st;
 
 
 /// @brief: Initializes the module
-void saw_init(saw_st *this, saw_conf_st *conf_ptr);
+void feed_init(feed_st *this, feed_conf_st *conf_ptr);
 
 
 /// @brief: Step function
-void saw_step(saw_st *this, uint16_t step_ms);
+void feed_step(feed_st *this, uint16_t step_ms);
 
 
-static inline int16_t saw_get_current(saw_st *this) {
-	return uv_dual_output_get_current(&this->out);
+static inline int16_t feed_get_current(feed_st *this) {
+	return uv_output_get_current(&this->series_out);
 }
 
 
-static inline int8_t saw_get_request(saw_st *this) {
+static inline int8_t feed_get_request(feed_st *this) {
 	return input_get_request(&this->input);
 }
 
 
-static inline void saw_disable(saw_st *this) {
-	uv_dual_output_disable(&this->out);
+static inline void feed_disable(feed_st *this) {
+	uv_output_disable(&this->series_out);
 }
 
 
-static inline void saw_enable(saw_st *this) {
-	uv_dual_output_enable(&this->out);
+static inline void feed_enable(feed_st *this) {
+	uv_output_enable(&this->series_out);
 }
 
 
-static inline uint8_t saw_is_in(saw_st *this) {
-	return this->in;
-}
 
-
-#endif /* INC_MODULES_SAW_H_ */
+#endif /* INC_MODULES_FEED_H_ */

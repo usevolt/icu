@@ -53,7 +53,7 @@ void feedopen_step(feedopen_st *this, uint16_t step_ms) {
 
 	uv_dual_output_set(&this->out, input_get_dir(&this->input));
 
-	remote_valve_set_request(&dev.impl1, this, input_get_request(&this->input), NULL);
+	remote_valve_set_request(&dev.impl1, this, input_get_request(&this->input), &this->conf->out_conf);
 
 }
 
