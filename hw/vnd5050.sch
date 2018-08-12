@@ -4,7 +4,7 @@ EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 6 11
+Sheet 8 13
 Title ""
 Date ""
 Rev ""
@@ -229,15 +229,13 @@ Wire Wire Line
 Wire Wire Line
 	2950 3550 2950 4100
 Wire Wire Line
-	2950 4300 4300 4300
+	2950 4300 3500 4300
 Wire Wire Line
 	3050 3550 2950 3550
 Connection ~ 2950 4300
 Connection ~ 2950 4100
 Wire Wire Line
 	3350 3550 3500 3550
-Wire Wire Line
-	3500 3200 3500 3350
 Wire Wire Line
 	3500 3350 2550 3350
 Connection ~ 3500 3550
@@ -298,54 +296,6 @@ Wire Wire Line
 Wire Wire Line
 	4150 4100 4300 4100
 Connection ~ 4150 3900
-$Comp
-L icu-rescue:DIODE_RS07J-GS18 D301
-U 1 1 5A7BC689
-P 3700 3200
-AR Path="/5A7B157A/5A7BC689" Ref="D301"  Part="1" 
-AR Path="/5A7B341B/5A7BC689" Ref="D501"  Part="1" 
-AR Path="/5A7B2C1B/5A7BC689" Ref="D401"  Part="1" 
-AR Path="/5A7B3FAD/5A7BC689" Ref="D601"  Part="1" 
-AR Path="/5A7B4C13/5A7BC689" Ref="D701"  Part="1" 
-AR Path="/5A7B577E/5A7BC689" Ref="D801"  Part="1" 
-AR Path="/5A7B753D/5A7BC689" Ref="D901"  Part="1" 
-F 0 "D301" H 3650 3340 45  0000 C CNN
-F 1 "DIODE_RS07J-GS18" H 3720 3140 45  0001 L BNN
-F 2 "usevolt:DO219AB" H 3730 3350 20  0001 C CNN
-F 3 "http://www.vishay.com/docs/85742/rs07b.pdf" H 3720 3220 60  0001 C CNN
-F 4 "1864882" H 4320 3820 60  0001 C CNN "2nd Source Part Number"
-F 5 "Digi-Key" H 4020 3520 60  0001 C CNN "1st Source"
-F 6 "Farnell" H 4220 3720 60  0001 C CNN "2nd Source"
-F 7 "RS07J-GS18" H 3920 3420 60  0001 C CNN "Manufacturer Part Number"
-F 8 "RS07J-GS18-ND" H 4120 3620 60  0001 C CNN "1st Source Part Number"
-F 9 "Vishay Semiconductor Diodes Division" H 3820 3320 60  0001 C CNN "Manufacturer"
-	1    3700 3200
-	1    0    0    -1  
-$EndComp
-Connection ~ 3500 3350
-$Comp
-L icu-rescue:+3V3 #PWR048
-U 1 1 5A7BC750
-P 3900 3100
-AR Path="/5A7B157A/5A7BC750" Ref="#PWR048"  Part="1" 
-AR Path="/5A7B341B/5A7BC750" Ref="#PWR020"  Part="1" 
-AR Path="/5A7B2C1B/5A7BC750" Ref="#PWR016"  Part="1" 
-AR Path="/5A7B3FAD/5A7BC750" Ref="#PWR024"  Part="1" 
-AR Path="/5A7B4C13/5A7BC750" Ref="#PWR028"  Part="1" 
-AR Path="/5A7B577E/5A7BC750" Ref="#PWR032"  Part="1" 
-AR Path="/5A7B753D/5A7BC750" Ref="#PWR036"  Part="1" 
-AR Path="/5A7BC750" Ref="#PWR048"  Part="1" 
-F 0 "#PWR048" H 3900 2950 50  0001 C CNN
-F 1 "+3V3" H 3915 3273 50  0000 C CNN
-F 2 "" H 3900 3100 50  0000 C CNN
-F 3 "" H 3900 3100 50  0000 C CNN
-	1    3900 3100
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	3900 3100 3900 3200
-Wire Wire Line
-	3900 3200 3800 3200
 Wire Wire Line
 	5250 3800 5250 3900
 Wire Wire Line
@@ -398,4 +348,31 @@ F 7 "YAGEO" H 3219 3689 60  0001 C CNN "Manufacturer"
 $EndComp
 Connection ~ 3350 3550
 Connection ~ 3050 3550
+$Comp
+L usevolt:ZENER_MM3Z3V6T1G D801
+U 1 1 5B753167
+P 3500 3600
+AR Path="/5A7B753D/5B753167" Ref="D801"  Part="1" 
+AR Path="/5A7B2C1B/5B753167" Ref="D301"  Part="1" 
+AR Path="/5A7B341B/5B753167" Ref="D401"  Part="1" 
+AR Path="/5A7B3FAD/5B753167" Ref="D501"  Part="1" 
+AR Path="/5A7B4C13/5B753167" Ref="D601"  Part="1" 
+AR Path="/5A7B577E/5B753167" Ref="D701"  Part="1" 
+AR Path="/5A7B157A/5B753167" Ref="D1001"  Part="1" 
+F 0 "D1001" V 3425 3522 45  0000 R CNN
+F 1 "ZENER_MM3Z3V6T1G" H 3775 3975 45  0001 L BNN
+F 2 "usevolt:SOD-323" H 3475 3975 20  0001 C CNN
+F 3 "http://www.mouser.com/ds/2/308/MM3Z2V4T1-D-269162.pdf" H 3850 4175 60  0001 C CNN
+F 4 "Mouser" H 3820 3920 60  0001 C CNN "1st Source"
+F 5 "MM3Z3V6T1G" H 3720 3820 60  0001 C CNN "Manufacturer Part Number"
+F 6 "863-MM3Z3V6T1G" H 3920 4020 60  0001 C CNN "1st Source Part Number"
+F 7 "ON Semiconductor" H 3775 4075 60  0001 C CNN "Manufacturer"
+	1    3500 3600
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	3500 3800 3500 4300
+Connection ~ 3500 4300
+Wire Wire Line
+	3500 4300 4300 4300
 $EndSCHEMATC
