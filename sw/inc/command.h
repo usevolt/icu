@@ -29,7 +29,7 @@
 
 
 #define COMMAND_REQ_MAX_VAL			INT8_MAX
-#define COMMAND_REQ_MIN_VAL			INT8_MIN
+#define COMMAND_REQ_MIN_VAL			(INT8_MIN + 1)
 
 typedef struct {
 	// request is control request from CAN bus. values should be int8_t,

@@ -70,7 +70,7 @@ int16_t command_get_current_ma(command_st *this) {
 		ret = uv_lerpi(ret, this->confs.min_current_p, this->confs.max_current_p);
 	}
 	else {
-		ret = uv_reli(req, INT8_MIN, 0);
+		ret = uv_reli(req, (INT8_MIN + 1), 0);
 		ret = -uv_lerpi(ret, this->confs.max_current_n, this->confs.min_current_n);
 	}
 

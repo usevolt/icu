@@ -22,7 +22,7 @@ dev_st dev = {};
 #define this ((dev_st*) &dev)
 
 #define VND5050_CURRENT_AMPL_UA		4173
-#define OUT_AVG_COUNT				10
+#define OUT_AVG_COUNT				30
 
 
 
@@ -113,7 +113,7 @@ void init(dev_st* me) {
 	// initialize outputs
 	for (uint8_t i = 0; i < OUT_COUNT; i++) {
 		uv_dual_output_init(&this->out[i], outs[i].gpioa, outs[i].gpiob, outs[i].adc,
-				VND5050_CURRENT_AMPL_UA, 4000, 6000, OUT_AVG_COUNT,
+				VND5050_CURRENT_AMPL_UA, 5000, 8000, OUT_AVG_COUNT,
 				ICU_EMCY_OUT1_OVERCURRENT + i * 2, ICU_EMCY_OUT1_FAULT + i * 2);
 	}
 	uv_dual_output_set_invert(&this->out[BLADES_OPEN_OUT], true);
