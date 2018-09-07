@@ -66,9 +66,6 @@ void allopen_step(allopen_st *this, uint16_t step_ms) {
 	}
 	else {
 		// do nothing
-		bladeopen_set_dir_req(&dev.bladeopen, DUAL_OUTPUT_OFF);
-		feedopen_set_dir_req(&dev.feedopen, DUAL_OUTPUT_OFF);
-
 		uv_delay_init(&this->close_delay, this->conf->close_delay_ms);
 	}
 

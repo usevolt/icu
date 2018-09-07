@@ -52,17 +52,22 @@ void feedopen_step(feedopen_st *this, uint16_t step_ms) {
 
 	uv_dual_output_set_invert(&this->out, this->conf->out_conf.invert);
 
+	uv_dual_output_dir_e dir = input_get_dir(&this->input);
+
 	if ((this->dir_req != DUAL_OUTPUT_OFF) &&
 			input_get_request(&this->input) == 0) {
+
 		// manual direction request is active, probably from all open or feeding
-		uv_dual_output_set(&this->out, this->dir_req);
+		dir = this->dir_req;
+		// manual request has to be updates every step cycle
+		this->dir_req = DUAL_OUTPUT_OFF;
 	}
 	else {
-		// normal operation
-		uv_dual_output_set(&this->out, input_get_dir(&this->input));
 	}
 
+	uv_dual_output_set(&this->out, dir);
 	remote_valve_set_request(&dev.impl1, this, input_get_request(&this->input), &this->conf->out_conf);
 
 }
+
 

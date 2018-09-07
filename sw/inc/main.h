@@ -32,6 +32,14 @@
 #define REMOTE_VALVE_DELAY_MS			1200
 
 
+/// @brief: Harvester head states
+typedef enum {
+	STATE_UNKNOWN = -1,
+	STATE_NORMAL = 0,
+	STATE_TILTED,
+} states_e;
+
+
 /// @brief: main data structure.
 /// This struct can be save to non-volatile flash memory with
 /// a terminal command 'save'.
@@ -49,9 +57,9 @@ typedef struct _dev_st {
 
 	// the priority order is determined by the order of modules here. First one is the least priority.
 	allopen_st allopen;
+	feed_st feed;
 	bladeopen_st bladeopen;
 	feedopen_st feedopen;
-	feed_st feed;
 	saw_st saw;
 	tilt_st tilt;
 

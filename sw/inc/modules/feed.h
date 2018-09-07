@@ -26,9 +26,16 @@
 #include "input.h"
 
 
+typedef enum {
+	FEED_FEEDOPEN_STATE_OFF = 0,
+	FEED_FEEDOPEN_STATE_ON
+} feed_feedopen_states_e;
+
 /// @brief: Boom fold configuration settings. Should be stored in non-volatile memory
 typedef struct {
 	icu_conf_st out_conf;
+	uint16_t feedopen_on_time_ms;
+	uint16_t feedopen_off_time_ms;
 } feed_conf_st;
 
 /// @brief: Resets the non-volatile settings to defaults
@@ -40,6 +47,9 @@ typedef struct {
 	input_st input;
 
 	uv_output_st series_out;
+
+	uv_delay_st feedopen_delay;
+	feed_feedopen_states_e feedopen_state;
 
 	feed_conf_st *conf;
 

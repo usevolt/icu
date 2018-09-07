@@ -214,10 +214,7 @@ Wire Wire Line
 	1650 2100 1650 2400
 Connection ~ 1650 2100
 Wire Wire Line
-	1650 2850 1450 2850
-Connection ~ 1650 2400
-Wire Wire Line
-	1450 2250 2850 2250
+	1450 2250 1750 2250
 Wire Wire Line
 	2850 2250 2850 2800
 Wire Wire Line
@@ -878,8 +875,6 @@ Wire Wire Line
 	7200 5350 4700 5350
 Wire Wire Line
 	1650 2100 3200 2100
-Wire Wire Line
-	1650 2400 1650 2850
 $Comp
 L icu-rescue:VDD #PWR0101
 U 1 1 5B1D8945
@@ -964,4 +959,16 @@ Wire Wire Line
 	7200 6100 5950 6100
 Wire Wire Line
 	7200 5750 5950 5750
+Wire Wire Line
+	1450 3000 1750 3000
+Wire Wire Line
+	1750 3000 1750 2250
+Connection ~ 1750 2250
+Wire Wire Line
+	1750 2250 2850 2250
+Wire Wire Line
+	1750 3000 1750 3150
+Wire Wire Line
+	1750 3150 1450 3150
+Connection ~ 1750 3000
 $EndSCHEMATC

@@ -56,6 +56,7 @@ void bladeopen_step(bladeopen_st *this, uint16_t step_ms) {
 			input_get_request(&this->input) == 0) {
 		// manual direction request is active, probably from all open or feeding
 		uv_dual_output_set(&this->out, this->dir_req);
+		this->dir_req = DUAL_OUTPUT_OFF;
 	}
 	else {
 		// normal operation
