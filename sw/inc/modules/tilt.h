@@ -60,7 +60,7 @@ static inline int16_t tilt_get_current(tilt_st *this) {
 
 
 static inline int8_t tilt_get_request(tilt_st *this) {
-	return input_get_request(&this->input);
+	return input_get_request(&this->input, &this->conf->out_conf);
 }
 
 

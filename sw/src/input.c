@@ -73,13 +73,13 @@ void input_step(input_st *this, uint16_t step_ms) {
 
 
 
-uv_dual_output_dir_e input_get_dir(input_st *this) {
+uv_dual_output_dir_e input_get_dir(input_st *this, icu_conf_st *conf) {
 	uv_dual_output_dir_e ret = DUAL_OUTPUT_OFF;
 	if (this->request > 0) {
-		ret = DUAL_OUTPUT_POS;
+		ret = conf->invert ? DUAL_OUTPUT_NEG : DUAL_OUTPUT_POS;
 	}
 	else if (this->request < 0) {
-		ret = DUAL_OUTPUT_NEG;
+		ret = conf->invert ? DUAL_OUTPUT_POS : DUAL_OUTPUT_NEG;
 	}
 	else {
 

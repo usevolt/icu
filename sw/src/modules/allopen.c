@@ -31,9 +31,9 @@ void allopen_conf_reset(allopen_conf_st *this) {
 	this->out_conf.acc = ICU_CONF_ACC_MAX;
 	this->out_conf.dec = ICU_CONF_DEC_MAX;
 	this->out_conf.invert = true;
+	this->out_conf.assembly_invert = false;
 	this->out_conf.max_speed_a = 30;
 	this->out_conf.max_speed_b = 40;
-	this->dir_invert = 0;
 	this->close_delay_ms = 500;
 }
 
@@ -48,20 +48,22 @@ void allopen_init(allopen_st *this, allopen_conf_st *conf_ptr) {
 void allopen_step(allopen_st *this, uint16_t step_ms) {
 	input_step(&this->input, step_ms);
 
-	if ((input_get_request(&this->input) * ((this->conf->out_conf.invert) ? -1 : 1)) > 0) {
+	if (input_get_request(&this->input, &this->conf->out_conf) *
+			((this->conf->out_conf.assembly_invert) ? -1 : 1) > 0) {
 		// all open
-		bladeopen_set_dir_req(&dev.bladeopen, this->conf->dir_invert ? DUAL_OUTPUT_NEG : DUAL_OUTPUT_POS);
-		feedopen_set_dir_req(&dev.feedopen, this->conf->dir_invert ? DUAL_OUTPUT_NEG : DUAL_OUTPUT_POS);
+		bladeopen_set_dir_req(&dev.bladeopen, DUAL_OUTPUT_POS);
+		feedopen_set_dir_req(&dev.feedopen, DUAL_OUTPUT_POS);
 
 		uv_delay_init(&this->close_delay, this->conf->close_delay_ms);
 	}
-	else if ((input_get_request(&this->input) * ((this->conf->out_conf.invert) ? -1 : 1)) < 0) {
+	else if ((input_get_request(&this->input, &this->conf->out_conf) *
+			((this->conf->out_conf.assembly_invert) ? -1 : 1)) < 0) {
 		// all close
-		bladeopen_set_dir_req(&dev.bladeopen, this->conf->dir_invert ? DUAL_OUTPUT_POS : DUAL_OUTPUT_NEG);
+		bladeopen_set_dir_req(&dev.bladeopen, DUAL_OUTPUT_NEG);
 
 		uv_delay(&this->close_delay, step_ms);
 		if (uv_delay_has_ended(&this->close_delay)) {
-			feedopen_set_dir_req(&dev.feedopen, this->conf->dir_invert ? DUAL_OUTPUT_POS : DUAL_OUTPUT_NEG);
+			feedopen_set_dir_req(&dev.feedopen, DUAL_OUTPUT_NEG);
 		}
 	}
 	else {
@@ -69,7 +71,9 @@ void allopen_step(allopen_st *this, uint16_t step_ms) {
 		uv_delay_init(&this->close_delay, this->conf->close_delay_ms);
 	}
 
-	remote_valve_set_request(&dev.impl1, this, input_get_request(&this->input), &this->conf->out_conf);
+	remote_valve_set_request(&dev.impl1, this,
+			input_get_request(&this->input, &this->conf->out_conf),
+			&this->conf->out_conf);
 
 }
 

@@ -31,7 +31,6 @@
 typedef struct {
 	icu_conf_st out_conf;
 	// if 1, negative value is considered all-open and positive all-close
-	uint16_t dir_invert;
 
 	uint16_t close_delay_ms;
 } allopen_conf_st;
@@ -61,7 +60,7 @@ void allopen_step(allopen_st *this, uint16_t step_ms);
 
 
 static inline int8_t allopen_get_request(allopen_st *this) {
-	return input_get_request(&this->input);
+	return input_get_request(&this->input, &this->conf->out_conf);
 }
 
 

@@ -28,7 +28,8 @@
 void feedopen_conf_reset(feedopen_conf_st *this) {
 	this->out_conf.acc = ICU_CONF_ACC_MAX;
 	this->out_conf.dec = ICU_CONF_DEC_MAX;
-	this->out_conf.invert = true;
+	this->out_conf.invert = false;
+	this->out_conf.assembly_invert = false;
 	this->out_conf.max_speed_a = 30;
 	this->out_conf.max_speed_b = 30;
 }
@@ -50,12 +51,12 @@ void feedopen_init(feedopen_st *this, feedopen_conf_st *conf_ptr) {
 void feedopen_step(feedopen_st *this, uint16_t step_ms) {
 	input_step(&this->input, step_ms);
 
-	uv_dual_output_set_invert(&this->out, this->conf->out_conf.invert);
+	uv_dual_output_set_invert(&this->out, this->conf->out_conf.assembly_invert);
 
-	uv_dual_output_dir_e dir = input_get_dir(&this->input);
+	uv_dual_output_dir_e dir = input_get_dir(&this->input, &this->conf->out_conf);
+	int8_t req = input_get_request(&this->input, &this->conf->out_conf);
 
-	if ((this->dir_req != DUAL_OUTPUT_OFF) &&
-			input_get_request(&this->input) == 0) {
+	if ((this->dir_req != DUAL_OUTPUT_OFF) && req == 0) {
 
 		// manual direction request is active, probably from all open or feeding
 		dir = this->dir_req;
@@ -66,7 +67,8 @@ void feedopen_step(feedopen_st *this, uint16_t step_ms) {
 	}
 
 	uv_dual_output_set(&this->out, dir);
-	remote_valve_set_request(&dev.impl1, this, input_get_request(&this->input), &this->conf->out_conf);
+	uv_dual_output_step(&this->out, step_ms);
+	remote_valve_set_request(&dev.impl1, this, req, &this->conf->out_conf);
 
 }
 

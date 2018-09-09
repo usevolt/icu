@@ -29,7 +29,8 @@
 void tilt_conf_reset(tilt_conf_st *this) {
 	this->out_conf.acc = ICU_CONF_ACC_MAX;
 	this->out_conf.dec = ICU_CONF_DEC_MAX;
-	this->out_conf.invert = true;
+	this->out_conf.invert = false;
+	this->out_conf.assembly_invert = false;
 	this->out_conf.max_speed_a = 8;
 	this->out_conf.max_speed_b = 8;
 }
@@ -50,15 +51,16 @@ void tilt_init(tilt_st *this, tilt_conf_st *conf_ptr) {
 void tilt_step(tilt_st *this, uint16_t step_ms) {
 	input_step(&this->input, step_ms);
 
-	uv_dual_output_set_invert(&this->out, this->conf->out_conf.invert);
+	uv_dual_output_set_invert(&this->out, this->conf->out_conf.assembly_invert);
 
-	int8_t req = input_get_request(&this->input);
+	int8_t req = input_get_request(&this->input, &this->conf->out_conf);
 
 	if (feed_get_request(&dev.feed)) {
 		req = 0;
 	}
 
 	uv_dual_output_set(&this->out, input_get_dir_from_req(req));
+	uv_dual_output_step(&this->out, step_ms);
 
 	remote_valve_set_request(&dev.impl1, this, req, &this->conf->out_conf);
 

@@ -26,7 +26,9 @@ static bool initialized = false;
 
 
 void gpio_callback(uv_gpios_e gpio) {
-
+	if (gpio == LEN_IN) {
+		feed_len_int(&this->feed);
+	}
 }
 
 
@@ -51,6 +53,7 @@ void init(dev_st* me) {
 	this->fsb.door_sw2 = 0;
 	this->fsb.seat_sw = 0;
 
+	uv_gpio_interrupt_init(&gpio_callback);
 
 	remote_valve_init(&this->impl1, REMOTE_VALVE_DELAY_MS, false);
 	remote_valve_init(&this->impl2, REMOTE_VALVE_DELAY_MS, true);
@@ -61,8 +64,6 @@ void init(dev_st* me) {
 	tilt_init(&this->tilt, &this->tilt_conf);
 	feed_init(&this->feed, &this->feed_conf);
 	allopen_init(&this->allopen, &this->allopen_conf);
-
-	uv_gpio_interrupt_init(&gpio_callback);
 
 
 	//init terminal and pass application terminal commands array as a parameter

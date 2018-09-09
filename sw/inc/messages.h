@@ -23,6 +23,7 @@ int obj_dict_len();
 typedef enum {
 	CMD_STAT = 0,
 	CMD_SET,
+	CMD_FEED,
 	CMD_COUNT
 } gsm_commands_e;
 

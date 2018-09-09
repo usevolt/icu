@@ -63,7 +63,7 @@ static inline int16_t bladeopen_get_current(bladeopen_st *this) {
 
 
 static inline int8_t bladeopen_get_request(bladeopen_st *this) {
-	return input_get_request(&this->input);
+	return input_get_request(&this->input, &this->conf->out_conf);
 }
 
 /// @brief: Sets the bladeopen manual request

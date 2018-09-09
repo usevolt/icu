@@ -26,28 +26,53 @@
 #include "saw.h"
 #include "tilt.h"
 #include "feedopen.h"
+#include <string.h>
 
 #define FEEDOPEN_DELAY_OFF_MS		1000
 #define FEEDOPEN_DELAY_ON_MS		60
+#define LEN_CALIB_DEF				66
 
 #define GET_FEEDOPEN_TIME(this) ((this->feedopen_state == FEED_FEEDOPEN_STATE_ON) ? \
 						this->conf->feedopen_on_time_ms : this->conf->feedopen_off_time_ms)
+
+static const icu_feed_fl_st fl_def[FEED_FL_COUNT] = {
+		{
+				.dist_mm = 650,
+				.max_speed = INPUT_MAX_REQ
+		},
+		{
+				.dist_mm = 150,
+				.max_speed = INPUT_MAX_REQ / 10
+		},
+		{
+				.dist_mm = 50,
+				.max_speed = 1
+		}
+};
 
 
 void feed_conf_reset(feed_conf_st *this) {
 	this->out_conf.acc = ICU_CONF_ACC_MAX;
 	this->out_conf.dec = ICU_CONF_DEC_MAX;
 	this->out_conf.invert = true;
+	this->out_conf.assembly_invert = false;
 	this->out_conf.max_speed_a = ICU_CONF_SPEED_MAX;
 	this->out_conf.max_speed_b = ICU_CONF_SPEED_MAX;
 	this->feedopen_on_time_ms = FEEDOPEN_DELAY_ON_MS;
 	this->feedopen_off_time_ms = FEEDOPEN_DELAY_OFF_MS;
+	this->len_calib = LEN_CALIB_DEF;
+	memcpy(this->fl, fl_def, sizeof(this->fl));
 }
 
 
 void feed_init(feed_st *this, feed_conf_st *conf_ptr) {
 	input_init(&this->input);
 	this->conf = conf_ptr;
+	this->len_um = 0;
+	this->target_len_um = 3000000;
+	this->len_to_target_mm = this->target_len_um;
+	this->state = ICU_FEED_STATE_OFF;
+	this->fl_index = 0;
 
 	uv_output_init(&this->series_out, FEED_SENSE, FEED_SERIES,
 			VND5050_CURRENT_AMPL_UA, 5000, 8000, SOLENOID_AVG_COUNT,
@@ -56,7 +81,27 @@ void feed_init(feed_st *this, feed_conf_st *conf_ptr) {
 	this->feedopen_state = FEED_FEEDOPEN_STATE_ON;
 	uv_delay_init(&this->feedopen_delay, this->conf->feedopen_on_time_ms);
 
+	uv_gpio_init_input(LEN_IN, PULL_UP_ENABLED);
+	uv_gpio_init_int(LEN_IN, INT_BOTH_EDGES);
+
 }
+
+
+void feed_len_int(feed_st *this) {
+	if (input_get_request(&this->input, &this->conf->out_conf) *
+			((this->conf->out_conf.assembly_invert) ? -1 : 1) > 0) {
+		this->len_um += this->conf->len_calib * 100;
+	}
+	else if (input_get_request(&this->input, &this->conf->out_conf) *
+			((this->conf->out_conf.assembly_invert) ? -1 : 1) < 0) {
+		this->len_um -= this->conf->len_calib * 100;
+	}
+	else {
+
+	}
+}
+
+
 
 
 void feed_step(feed_st *this, uint16_t step_ms) {
@@ -65,16 +110,70 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 	int8_t req = 0;
 	bool series_feed = true;
 
+	// update the length to target length all the time
+	this->len_to_target_mm = (this->target_len_um - this->len_um) / 1000;
+
 	if (!saw_is_in(&dev.saw)) {
 		req = 0;
 	}
 	else {
-		req = input_get_request(&this->input) * ((this->conf->out_conf.invert) ? -1 : 1);
+		req = input_get_request(&this->input, &this->conf->out_conf);
+
+		// feeding logic
+		// the most important thing: always stop if button feed request is not on
+		if (req == 0) {
+			if (this->state != ICU_FEED_STATE_TARGET_REACHED &&
+					this->state != ICU_FEED_STATE_TARGET_UNREACHED) {
+				this->state = ICU_FEED_STATE_OFF;
+			}
+		}
+		else {
+			if (input_pressed(&this->input)) {
+				// if the target length was already reached, feeding starts in manual mode
+				if (abs(this->len_to_target_mm) < this->conf->fl[FEED_FL_COUNT - 1].dist_mm) {
+					this->state = ICU_FEED_STATE_MANUAL;
+				}
+				// otherwise in normal mode
+				else {
+					this->state = ICU_FEED_STATE_ON;
+					this->fl_index = 0;
+				}
+			}
+
+			if (this->state == ICU_FEED_STATE_ON) {
+				// check if it's time to increase the fuzzy logic level
+				if (this->len_to_target_mm < this->conf->fl[this->fl_index].dist_mm) {
+					this->fl_index++;
+					// target reached
+					if (this->fl_index == FEED_FL_COUNT) {
+						this->fl_index--;
+						this->state = ICU_FEED_STATE_TARGET_REACHED;
+						req = 0;
+					}
+				}
+
+
+				// update request to match the required speed from fuzzy logic
+				req = (req < 0) ?
+						- this->conf->fl[this->fl_index].max_speed :
+						this->conf->fl[this->fl_index].max_speed;
+			}
+			// dont move when the target was either reached or lost
+			else if (this->state == ICU_FEED_STATE_TARGET_REACHED ||
+					this->state == ICU_FEED_STATE_TARGET_UNREACHED) {
+				req = 0;
+			}
+			else {
+
+			}
+		}
 
 		// parallel feeding
 		if (tilt_get_request(&dev.tilt)) {
 			series_feed = false;
 		}
+
+
 		// close feeders while feeding
 		if (req) {
 			if (uv_delay(&this->feedopen_delay, step_ms)) {
@@ -103,9 +202,14 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 
 
 
-	// series feeding
-	uv_output_set(&this->series_out, series_feed ? OUTPUT_STATE_OFF : OUTPUT_STATE_ON);
-
+	uv_output_state_e s;
+	if (!req) {
+		s = OUTPUT_STATE_OFF;
+	}
+	else {
+		s = series_feed ? OUTPUT_STATE_ON : OUTPUT_STATE_OFF;
+	}
+	uv_output_set(&this->series_out, s);
 	uv_output_step(&this->series_out, step_ms);
 
 	remote_valve_set_request(&dev.impl2, this, req, &this->conf->out_conf);

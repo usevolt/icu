@@ -67,7 +67,7 @@ static inline int16_t saw_get_current(saw_st *this) {
 
 
 static inline int8_t saw_get_request(saw_st *this) {
-	return input_get_request(&this->input);
+	return input_get_request(&this->input, &this->conf->out_conf);
 }
 
 

@@ -41,7 +41,6 @@ void remote_valve_step(remote_valve_st *this, uint16_t step_ms) {
 			this->requester_priority_ptr = NULL;
 			this->stopped = 1;
 		}
-
 	}
 
 }

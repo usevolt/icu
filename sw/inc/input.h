@@ -22,6 +22,7 @@
 
 #include <uv_utilities.h>
 #include <uv_dual_output.h>
+#include "remote_valve.h"
 
 
 #define INPUT_MAX_REQ	INT8_MAX
@@ -67,17 +68,19 @@ static inline bool input_clicked(input_st *this) {
 }
 
 /// @brief: Returns the input request in scale of INT8_MIN ... INT8_MAX
-static inline int8_t input_get_request(input_st *this) {
-	return this->request;
+static inline int8_t input_get_request(input_st *this, icu_conf_st *conf) {
+	return this->request * ((conf->invert) ? -1 : 1);
 }
 
-uv_dual_output_dir_e input_get_dir(input_st *this);
+uv_dual_output_dir_e input_get_dir(input_st *this, icu_conf_st *conf);
 
 /// @brief: Returns the requested direction straight from request without input_st module
 static inline uv_dual_output_dir_e input_get_dir_from_req(int8_t req) {
 	input_st i;
+	icu_conf_st conf;
+	conf.invert = false;
 	i.request = req;
-	return input_get_dir(&i);
+	return input_get_dir(&i, &conf);
 }
 
 #endif /* INC_INPUT_H_ */

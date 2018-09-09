@@ -151,6 +151,41 @@ canopen_object_st obj_dict[] = {
 				.data_ptr = &this->feed.series_out.current
 		},
 		{
+				.main_index = ICU_LEN_CALIB_INDEX,
+				.sub_index = ICU_LEN_CALIB_SUBINDEX,
+				.type = ICU_LEN_CALIB_TYPE,
+				.permissions = ICU_LEN_CALIB_PERMISSIONS,
+				.data_ptr = &this->feed_conf.len_calib
+		},
+		{
+				.main_index = ICU_LENGTH_UM_INDEX,
+				.sub_index = ICU_LENGTH_UM_SUBINDEX,
+				.type = ICU_LENGTH_UM_TYPE,
+				.permissions = ICU_LENGTH_UM_PERMISSIONS,
+				.data_ptr = &this->feed.len_um
+		},
+		{
+				.main_index = ICU_TARGET_LEN_UM_INDEX,
+				.sub_index = ICU_TARGET_LEN_UM_SUBINDEX,
+				.type = ICU_TARGET_LEN_UM_TYPE,
+				.permissions = ICU_TARGET_LEN_UM_PERMISSIONS,
+				.data_ptr = &this->feed.target_len_um
+		},
+		{
+				.main_index = ICU_LEN_STATE_INDEX,
+				.sub_index = ICU_LEN_STATE_SUBINDEX,
+				.type = ICU_LEN_STATE_TYPE,
+				.permissions = ICU_LEN_STATE_PERMISSIONS,
+				.data_ptr = &this->feed.state
+		},
+		{
+				.main_index = ICU_LEN_FL_INDEX,
+				.array_max_size = ICU_LEN_FL_ARRAY_SIZE,
+				.type = ICU_LEN_FL_TYPE,
+				.permissions = ICU_LEN_FL_PERMISSIONS,
+				.data_ptr = &this->feed_conf.fl
+		},
+		{
 				.main_index = ICU_ALLOPEN_REQ_INDEX,
 				.sub_index = ICU_ALLOPEN_REQ_SUBINDEX,
 				.type = ICU_ALLOPEN_REQ_TYPE,
@@ -211,6 +246,7 @@ int obj_dict_len() {
 
 void stat_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
 void set_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
+void feed_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
 
 
 const uv_command_st terminal_commands[] = {
@@ -226,9 +262,16 @@ const uv_command_st terminal_commands[] = {
 				.str = "set",
 				.instructions = "Sets the configurations for output modules.\n"
 						"Usage: set <\"bladeopen\"/\"feedopen\"/\"feed\"/\"saw\"/\"tilt\"/\"allop\"> "
-						"<\"maxa\"/\"maxb\"/\"acc\"/\"dec\"/\"invert\">"
+						"<\"maxa\"/\"maxb\"/\"acc\"/\"dec\"/\"invert\"/\"assinv\">"
 						"<value>",
 				.callback = &set_callb
+		},
+		{
+				.id = CMD_FEED,
+				.str = "feed",
+				.instructions = "Sets the feed fuzzy logic parameters.\n"
+						"Usage: feed <0/1/2> <\"speed\"/\"dist\"> <value>",
+				.callback = &feed_callb
 		}
 };
 
@@ -259,6 +302,10 @@ void stat_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 	printf("Feed: request: %i, current: %u\n",
 			feed_get_request(&this->feed),
 			feed_get_current(&this->feed));
+	printf("Length: %i um\nTarget length: %i um\nLength calib %i\n",
+			this->feed.len_um,
+			this->feed.target_len_um,
+			this->feed_conf.len_calib);
 }
 
 
@@ -285,7 +332,7 @@ void set_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv)
 		else if (strcmp(str, "feed") == 0) {
 			conf = &this->feed_conf.out_conf;
 		}
-		else if (strcmp(str, "allo") == 0) {
+		else if (strcmp(str, "allop") == 0) {
 			conf = &this->allopen_conf.out_conf;
 		}
 		else {
@@ -313,6 +360,9 @@ void set_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv)
 					else if (strcmp(s, "invert") == 0) {
 						conf->invert = value;
 					}
+					else if (strcmp(s, "assinv") == 0) {
+						conf->assembly_invert = value;
+					}
 					else {
 						printf("Unknown parameter '%s'\n", s);
 					}
@@ -327,16 +377,51 @@ void set_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv)
 					"   Max Speed B: %u\n"
 					"   Acceleration: %u\n"
 					"   Deceleration: %u\n"
-					"   Invert: %u\n",
+					"   Invert: %u\n"
+					"   Assembly invert: %u\n",
 					str,
 					conf->max_speed_a,
 					conf->max_speed_b,
 					conf->acc,
 					conf->dec,
-					conf->invert);
+					conf->invert,
+					conf->assembly_invert);
 		}
 	}
 }
 
 
+void feed_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv) {
+	if (args >= 3 &&
+			argv[0].type == ARG_INTEGER &&
+			argv[1].type == ARG_STRING &&
+			argv[2].type == ARG_INTEGER) {
+		uint8_t i = argv[0].number;
+		char *str = argv[1].str;
+		int32_t value = argv[2].number;
+		if (i >= FEED_FL_COUNT) {
+			printf("Fuzzy logic doesnt have that much levels\n");
+		}
+		else {
+			if (strcmp(str, "speed") == 0) {
+				dev.feed.conf->fl[i].max_speed = value;
+			}
+			else if (strcmp(str, "dist") == 0) {
+				dev.feed.conf->fl[i].dist_mm = value;
+			}
+			else {
+				printf("Unknown fuzzy logic parameter '%s'\n", str);
+			}
+		}
+	}
+	printf("Feed fuzzy logic parameters:\n");
+	for (uint8_t i = 0; i < FEED_FL_COUNT; i++) {
+		printf("%u:\n"
+				"   distance: %u mm\n"
+				"   Speed: %u\n",
+				i,
+				dev.feed.conf->fl[i].dist_mm,
+				dev.feed.conf->fl[i].max_speed);
+	}
+}
 

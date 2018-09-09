@@ -30,6 +30,7 @@ void saw_conf_reset(saw_conf_st *this) {
 	this->out_conf.acc = ICU_CONF_ACC_MAX;
 	this->out_conf.dec = ICU_CONF_DEC_MAX;
 	this->out_conf.invert = false;
+	this->out_conf.assembly_invert = false;
 	this->out_conf.max_speed_a = 20;
 	this->out_conf.max_speed_b = ICU_CONF_SPEED_MAX;
 	this->saw_in_dir_invert = 1;
@@ -57,19 +58,25 @@ void saw_init(saw_st *this, saw_conf_st *conf_ptr) {
 void saw_step(saw_st *this, uint16_t step_ms) {
 	input_step(&this->input, step_ms);
 
+	uv_dual_output_set_invert(&this->out, this->conf->out_conf.assembly_invert);
+
+	int8_t req = input_get_request(&this->input, &this->conf->out_conf);
+
 	this->in = uv_gpio_get(SAW_IN);
-	if (input_get_request(&this->input)) {
+	if (req != 0) {
 		this->saw_moved = true;
 	}
 
-	int8_t req = 0;
+	if (input_pressed(&this->input)) {
+		feed_clear_len(&dev.feed);
+	}
 
 	if (remote_valve_get_request(&dev.impl2) != 0) {
-		// feeding, saw is disaled
+		// feeding, saw is disabled
 		req = 0;
 	}
 	else if (!saw_is_in(this) &&
-			(input_get_request(&this->input) == 0) &&
+			(req == 0) &&
 			!uv_delay_has_ended(&this->in_delay) &&
 			this->saw_moved) {
 		uv_delay(&this->in_delay, step_ms);
@@ -78,13 +85,11 @@ void saw_step(saw_st *this, uint16_t step_ms) {
 	}
 	else {
 		uv_delay_init(&this->in_delay, SAW_IN_DELAY_MS);
-
-		req = input_get_request(&this->input);
 	}
 
-	uv_dual_output_set_invert(&this->out, this->conf->out_conf.invert);
 
 	uv_dual_output_set(&this->out, input_get_dir_from_req(req));
+	uv_dual_output_step(&this->out, step_ms);
 
 	remote_valve_set_request(&dev.impl1, this, req, &this->conf->out_conf);
 

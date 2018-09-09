@@ -41,6 +41,7 @@ typedef struct {
 	uint16_t acc;
 	// from 0 ... 100
 	uint16_t dec;
+	uint16_t assembly_invert;
 } icu_conf_st;
 
 

@@ -66,7 +66,7 @@ static inline void feedopen_set_dir_req(feedopen_st *this, uv_dual_output_dir_e 
 }
 
 static inline int8_t feedopen_get_request(feedopen_st *this) {
-	return input_get_request(&this->input);
+	return input_get_request(&this->input, &this->conf->out_conf);
 }
 
 

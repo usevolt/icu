@@ -28,7 +28,8 @@
 void bladeopen_conf_reset(bladeopen_conf_st *this) {
 	this->out_conf.acc = ICU_CONF_ACC_MAX;
 	this->out_conf.dec = ICU_CONF_DEC_MAX;
-	this->out_conf.invert = true;
+	this->out_conf.invert = false;
+	this->out_conf.assembly_invert = false;
 	this->out_conf.max_speed_a = 20;
 	this->out_conf.max_speed_b = 20;
 }
@@ -50,20 +51,22 @@ void bladeopen_init(bladeopen_st *this, bladeopen_conf_st *conf_ptr) {
 void bladeopen_step(bladeopen_st *this, uint16_t step_ms) {
 	input_step(&this->input, step_ms);
 
-	uv_dual_output_set_invert(&this->out, this->conf->out_conf.invert);
+	uv_dual_output_set_invert(&this->out, this->conf->out_conf.assembly_invert);
 
-	if ((this->dir_req != DUAL_OUTPUT_OFF) &&
-			input_get_request(&this->input) == 0) {
+	int8_t req = input_get_request(&this->input, &this->conf->out_conf);
+
+	if ((this->dir_req != DUAL_OUTPUT_OFF) && req == 0) {
 		// manual direction request is active, probably from all open or feeding
 		uv_dual_output_set(&this->out, this->dir_req);
 		this->dir_req = DUAL_OUTPUT_OFF;
 	}
 	else {
 		// normal operation
-		uv_dual_output_set(&this->out, input_get_dir(&this->input));
+		uv_dual_output_set(&this->out, input_get_dir_from_req(req));
 	}
 
-	remote_valve_set_request(&dev.impl1, this, input_get_request(&this->input), &this->conf->out_conf);
+	uv_dual_output_step(&this->out, step_ms);
+	remote_valve_set_request(&dev.impl1, this, req, &this->conf->out_conf);
 
 }
 
