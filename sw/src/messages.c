@@ -299,9 +299,11 @@ void stat_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 			saw_get_request(&this->saw),
 			saw_get_current(&this->saw),
 			saw_is_in(&this->saw));
-	printf("Feed: request: %i, current: %u\n",
+	printf("Feed: request: %i, current: %u, state: %u, feedopen close time: %u ms\n",
 			feed_get_request(&this->feed),
-			feed_get_current(&this->feed));
+			feed_get_current(&this->feed),
+			this->feed.state,
+			this->feed_conf.feedopen_on_time_ms);
 	printf("Length: %i um\nTarget length: %i um\nLength calib %i\n",
 			this->feed.len_um,
 			this->feed.target_len_um,

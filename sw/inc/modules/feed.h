@@ -37,6 +37,14 @@ typedef enum {
 } feed_feedopen_states_e;
 
 
+/// @brief: Feed direction
+typedef enum {
+	FEED_DIR_NONE = 0,
+	FEED_DIR_FORWARD,
+	FEED_DIR_BACKWARD,
+	FEED_DIR_STUCK
+}feed_dir_e;
+
 
 
 /// @brief: Boom fold configuration settings. Should be stored in non-volatile memory
@@ -64,6 +72,8 @@ typedef struct {
 	int32_t len_um;
 	int32_t target_len_um;
 	int32_t len_to_target_mm;
+	int32_t last_len_um;
+	feed_dir_e feed_dir;
 	// tells which fuzzy logic level is currently used
 	uint8_t fl_index;
 	icu_feed_states_e state;

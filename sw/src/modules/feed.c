@@ -46,7 +46,7 @@ static const icu_feed_fl_st fl_def[FEED_FL_COUNT] = {
 		},
 		{
 				.dist_mm = 50,
-				.max_speed = 1
+				.max_speed = 5
 		}
 };
 
@@ -69,6 +69,8 @@ void feed_init(feed_st *this, feed_conf_st *conf_ptr) {
 	input_init(&this->input);
 	this->conf = conf_ptr;
 	this->len_um = 0;
+	this->last_len_um = this->len_um;
+	this->feed_dir = FEED_DIR_NONE;
 	this->target_len_um = 3000000;
 	this->len_to_target_mm = this->target_len_um;
 	this->state = ICU_FEED_STATE_OFF;
@@ -113,11 +115,32 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 	// update the length to target length all the time
 	this->len_to_target_mm = (this->target_len_um - this->len_um) / 1000;
 
+
 	if (!saw_is_in(&dev.saw)) {
 		req = 0;
+		this->feed_dir = FEED_DIR_NONE;
 	}
 	else {
 		req = input_get_request(&this->input, &this->conf->out_conf);
+
+		// feeding direction
+		// todo: implement logic for better direction algorithm
+		if (req) {
+			if (this->len_um > this->last_len_um) {
+				this->feed_dir = FEED_DIR_FORWARD;
+			}
+			else if (this->len_um < this->last_len_um) {
+				this->feed_dir = FEED_DIR_BACKWARD;
+			}
+			else {
+				this->feed_dir = FEED_DIR_STUCK;
+			}
+		}
+		else {
+			this->feed_dir = FEED_DIR_NONE;
+		}
+
+
 
 		// feeding logic
 		// the most important thing: always stop if button feed request is not on
@@ -129,10 +152,14 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 		}
 		else {
 			if (input_pressed(&this->input)) {
-				// if the target length was already reached, feeding starts in manual mode
-				if (abs(this->len_to_target_mm) < this->conf->fl[FEED_FL_COUNT - 1].dist_mm) {
+				// if the target length was already reached, or we are moving away from target,
+				// feeding starts in manual mode
+				if ((abs(this->len_to_target_mm) < this->conf->fl[FEED_FL_COUNT - 1].dist_mm) ||
+						(this->len_to_target_mm < 0 && req > 0) ||
+						(this->len_to_target_mm > 0 && req < 0)) {
 					this->state = ICU_FEED_STATE_MANUAL;
 				}
+				// or if we are pass the target
 				// otherwise in normal mode
 				else {
 					this->state = ICU_FEED_STATE_ON;
@@ -142,7 +169,7 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 
 			if (this->state == ICU_FEED_STATE_ON) {
 				// check if it's time to increase the fuzzy logic level
-				if (this->len_to_target_mm < this->conf->fl[this->fl_index].dist_mm) {
+				if (abs(this->len_to_target_mm) < this->conf->fl[this->fl_index].dist_mm) {
 					this->fl_index++;
 					// target reached
 					if (this->fl_index == FEED_FL_COUNT) {
@@ -150,6 +177,13 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 						this->state = ICU_FEED_STATE_TARGET_REACHED;
 						req = 0;
 					}
+				}
+				else if (this->fl_index != 0 &&
+						abs(this->len_to_target_mm) > this->conf->fl[this->fl_index - 1].dist_mm) {
+					this->fl_index--;
+				}
+				else {
+
 				}
 
 
@@ -194,12 +228,19 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 			}
 		}
 		else {
-			// defaults to ON state so that feeders are closed when starting the feeding
-			this->feedopen_state = FEED_FEEDOPEN_STATE_ON;
+			if (this->feedopen_state == FEED_FEEDOPEN_STATE_ON) {
+				// remote valve request was forgotten on when it should be cleared
+				remote_valve_set_request(&dev.impl1, this, 0, &dev.feedopen_conf.out_conf);
+			}
+			// defaults to OFF state
+			this->feedopen_state = FEED_FEEDOPEN_STATE_OFF;
 			uv_delay_init(&this->feedopen_delay, this->conf->feedopen_on_time_ms);
 		}
 	}
 
+
+	// update last length
+	this->last_len_um = this->len_um;
 
 
 	uv_output_state_e s;
