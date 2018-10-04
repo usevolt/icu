@@ -1,4 +1,9 @@
-EESchema Schematic File Version 4
+EESchema Schematic File Version 2
+LIBS:kemet
+LIBS:usevolt
+LIBS:wurth_elektronik_LED
+LIBS:power
+LIBS:yageo
 LIBS:icu-cache
 EELAYER 26 0
 EELAYER END
@@ -25,7 +30,7 @@ IN2
 Text HLabel 2550 3350 0    60   Output ~ 0
 SENSE
 $Comp
-L usevolt:VND5050AJTR-E U301
+L VND5050AJTR-E U301
 U 1 1 59D8088A
 P 4600 4000
 AR Path="/5A7B157A/59D8088A" Ref="U301"  Part="1" 
@@ -47,7 +52,7 @@ F 7 "VND5050AJTR-E" H 4800 4600 60  0001 C CNN "Manufacturer Part Number"
 	1    0    0    -1  
 $EndComp
 $Comp
-L power:VDD #PWR045
+L VDD #PWR045
 U 1 1 59D808C7
 P 5250 3650
 AR Path="/5A7B157A/59D808C7" Ref="#PWR045"  Part="1" 
@@ -65,7 +70,7 @@ F 3 "" H 5250 3650 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power:GND #PWR046
+L GND #PWR046
 U 1 1 59D86DC2
 P 2950 4450
 AR Path="/5A7B157A/59D86DC2" Ref="#PWR046"  Part="1" 
@@ -83,7 +88,7 @@ F 3 "" H 2950 4450 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L yageo:390 R?
+L 390 R?
 U 1 1 59D88845
 P 3150 3550
 AR Path="/5A015FC0/59D88845" Ref="R?"  Part="1" 
@@ -108,7 +113,7 @@ F 7 "YAGEO" H 3219 3689 60  0001 C CNN "Manufacturer"
 	1    0    0    -1  
 $EndComp
 $Comp
-L yageo:1K R?
+L 1K R?
 U 1 1 5A05950C
 P 2750 3550
 AR Path="/5A015FC0/5A05950C" Ref="R?"  Part="1" 
@@ -133,7 +138,7 @@ F 7 "YAGEO" H 2819 3689 60  0001 C CNN "Manufacturer"
 	1    0    0    -1  
 $EndComp
 $Comp
-L yageo:1K R?
+L 1K R?
 U 1 1 5A059568
 P 2750 4100
 AR Path="/5A015FC0/5A059568" Ref="R?"  Part="1" 
@@ -158,7 +163,7 @@ F 7 "YAGEO" H 2819 4239 60  0001 C CNN "Manufacturer"
 	1    0    0    -1  
 $EndComp
 $Comp
-L usevolt:DIODE_RS07J-GS18 D302
+L DIODE_RS07J-GS18 D302
 U 1 1 5A2AAF9E
 P 5450 4750
 AR Path="/5A7B157A/5A2AAF9E" Ref="D302"  Part="1" 
@@ -182,7 +187,7 @@ F 9 "Vishay Semiconductor Diodes Division" H 5570 4870 60  0001 C CNN "Manufactu
 	0    -1   -1   0   
 $EndComp
 $Comp
-L usevolt:DIODE_RS07J-GS18 D303
+L DIODE_RS07J-GS18 D303
 U 1 1 5A2AB087
 P 5700 4750
 AR Path="/5A7B157A/5A2AB087" Ref="D303"  Part="1" 
@@ -206,7 +211,7 @@ F 9 "Vishay Semiconductor Diodes Division" H 5820 4870 60  0001 C CNN "Manufactu
 	0    -1   -1   0   
 $EndComp
 $Comp
-L power:GND #PWR047
+L GND #PWR047
 U 1 1 5A2AB10F
 P 5550 5150
 AR Path="/5A7B157A/5A2AB10F" Ref="#PWR047"  Part="1" 
@@ -295,7 +300,7 @@ Wire Wire Line
 Wire Wire Line
 	4300 3450 4300 3800
 $Comp
-L kemet:4.7uF C301
+L 4.7uF C301
 U 1 1 5A708309
 P 3150 3850
 AR Path="/5A7B157A/5A708309" Ref="C301"  Part="1" 
@@ -326,7 +331,7 @@ Wire Wire Line
 	4150 4100 4300 4100
 Connection ~ 4150 3900
 $Comp
-L usevolt:DIODE_RS07J-GS18 D301
+L DIODE_RS07J-GS18 D301
 U 1 1 5A7BC689
 P 3700 3200
 AR Path="/5A7B157A/5A7BC689" Ref="D301"  Part="1" 
@@ -351,7 +356,7 @@ F 9 "Vishay Semiconductor Diodes Division" H 3820 3320 60  0001 C CNN "Manufactu
 $EndComp
 Connection ~ 3500 3350
 $Comp
-L power:+3V3 #PWR048
+L +3V3 #PWR048
 U 1 1 5A7BC750
 P 3900 3100
 AR Path="/5A7B157A/5A7BC750" Ref="#PWR048"  Part="1" 

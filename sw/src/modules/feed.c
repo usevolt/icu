@@ -248,7 +248,7 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 		s = OUTPUT_STATE_OFF;
 	}
 	else {
-		s = series_feed ? OUTPUT_STATE_ON : OUTPUT_STATE_OFF;
+		s = (series_feed != this->conf->out_conf.assembly_invert) ? OUTPUT_STATE_ON : OUTPUT_STATE_OFF;
 	}
 	uv_output_set(&this->series_out, s);
 	uv_output_step(&this->series_out, step_ms);

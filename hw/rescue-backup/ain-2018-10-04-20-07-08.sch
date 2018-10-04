@@ -1,4 +1,9 @@
-EESchema Schematic File Version 4
+EESchema Schematic File Version 2
+LIBS:kemet
+LIBS:usevolt
+LIBS:wurth_elektronik_LED
+LIBS:power
+LIBS:yageo
 LIBS:icu-cache
 EELAYER 26 0
 EELAYER END
@@ -19,7 +24,7 @@ VOUT
 Text HLabel 5050 3800 0    60   Input ~ 0
 VIN
 $Comp
-L yageo:10K R1101
+L 10K R1101
 U 1 1 5A7E0603
 P 5400 3950
 AR Path="/5A7E031E/5A7E0603" Ref="R1101"  Part="1" 
@@ -38,7 +43,7 @@ F 7 "YAGEO" H 5469 4089 60  0001 C CNN "Manufacturer"
 	0    1    1    0   
 $EndComp
 $Comp
-L yageo:20K R1102
+L 20K R1102
 U 1 1 5A7E064B
 P 5400 4350
 AR Path="/5A7E031E/5A7E064B" Ref="R1102"  Part="1" 
@@ -57,7 +62,7 @@ F 7 "YAGEO" H 5469 4489 60  0001 C CNN "Manufacturer"
 	0    1    1    0   
 $EndComp
 $Comp
-L usevolt:DIODE_RS07J-GS18 D1101
+L DIODE_RS07J-GS18 D1101
 U 1 1 5A7E069C
 P 5750 3900
 AR Path="/5A7E031E/5A7E069C" Ref="D1101"  Part="1" 
@@ -78,7 +83,7 @@ F 9 "Vishay Semiconductor Diodes Division" H 5870 4020 60  0001 C CNN "Manufactu
 	0    -1   -1   0   
 $EndComp
 $Comp
-L power:+3V3 #PWR049
+L +3V3 #PWR049
 U 1 1 5A7E070C
 P 5750 3750
 AR Path="/5A7E031E/5A7E070C" Ref="#PWR049"  Part="1" 
@@ -99,7 +104,7 @@ Wire Wire Line
 Wire Wire Line
 	5400 4150 5400 4250
 $Comp
-L power:GND #PWR050
+L GND #PWR050
 U 1 1 5A7E07A0
 P 5400 4600
 AR Path="/5A7E031E/5A7E07A0" Ref="#PWR050"  Part="1" 
