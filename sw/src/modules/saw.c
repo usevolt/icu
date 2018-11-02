@@ -51,6 +51,8 @@ void saw_init(saw_st *this, saw_conf_st *conf_ptr) {
 			ICU_EMCY_SAW_OVERCURRENT, ICU_EMCY_SAW_FAULT);
 
 	uv_delay_init(&this->in_delay, SAW_IN_DELAY_MS);
+	uv_delay_init(&this->afterfeed_delay, SAW_AFTERFEED_DELAY_MS);
+	uv_delay_end(&this->afterfeed_delay);
 
 }
 
@@ -67,15 +69,25 @@ void saw_step(saw_st *this, uint16_t step_ms) {
 		this->saw_moved = true;
 	}
 
-	if (input_pressed(&this->input)) {
+	if (req && (feed_get_request(&dev.feed) == 0)) {
 		feed_clear_len(&dev.feed);
 	}
 
-	if (remote_valve_get_request(&dev.impl2) != 0) {
+	if (feed_get_request(&dev.feed) != 0) {
 		// feeding, saw is disabled
 		req = 0;
 	}
-	else if (!saw_is_in(this) &&
+	else if (feed_get_request(&dev.feed) == 0) {
+		if (this->feed_last_req) {
+			// when feeding has been stopped, pull saw in for a couple milliseconds
+			uv_delay_init(&this->afterfeed_delay, SAW_AFTERFEED_DELAY_MS);
+		}
+	}
+	else {
+
+	}
+
+	if (!saw_is_in(this) &&
 			(req == 0) &&
 			!uv_delay_has_ended(&this->in_delay) &&
 			this->saw_moved) {
@@ -87,6 +99,15 @@ void saw_step(saw_st *this, uint16_t step_ms) {
 		uv_delay_init(&this->in_delay, SAW_IN_DELAY_MS);
 	}
 
+	uv_delay(&this->afterfeed_delay, step_ms);
+	if (!uv_delay_has_ended(&this->afterfeed_delay)) {
+		// if afterfeed delay is not ended, it means that it has been started
+		// and we should pull saw in
+		// pull saw in
+		req = this->conf->saw_in_dir_invert ? INPUT_MAX_REQ : INPUT_MIN_REQ;
+	}
+
+	this->feed_last_req = feed_get_request(&dev.feed);
 
 	uv_dual_output_set(&this->out, input_get_dir_from_req(req));
 	uv_dual_output_step(&this->out, step_ms);

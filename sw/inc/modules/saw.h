@@ -38,6 +38,8 @@ void saw_conf_reset(saw_conf_st *this);
 
 #define SAW_IN_DELAY_MS				4000
 
+#define SAW_AFTERFEED_DELAY_MS		100
+
 typedef struct {
 	// input module from the CAN-bus
 	input_st input;
@@ -47,6 +49,9 @@ typedef struct {
 	uint8_t in;
 	bool saw_moved;
 	uv_delay_st in_delay;
+
+	int8_t feed_last_req;
+	uv_delay_st afterfeed_delay;
 
 	saw_conf_st *conf;
 
