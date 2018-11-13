@@ -96,8 +96,11 @@ void feed_step(feed_st *this, uint16_t step_ms);
 void feed_len_int(feed_st *this);
 
 
-static inline void feed_clear_len(feed_st *this) {
-	this->len_um = 0;
+void feed_clear_len(feed_st *this);
+
+// @brief: Returns the current length
+static inline int32_t feed_get_len_um(feed_st *this) {
+	return this->len_um;
 }
 
 static inline int16_t feed_get_current(feed_st *this) {

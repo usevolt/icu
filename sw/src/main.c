@@ -43,6 +43,7 @@ void init(dev_st* me) {
 		saw_conf_reset(&this->saw_conf);
 		tilt_conf_reset(&this->tilt_conf);
 		feed_conf_reset(&this->feed_conf);
+		measurement_reset(&this->meas_conf);
 
 		uv_memory_save();
 	}
@@ -65,6 +66,7 @@ void init(dev_st* me) {
 	feed_init(&this->feed, &this->feed_conf);
 	allopen_init(&this->allopen, &this->allopen_conf);
 
+	measurement_init(&this->meas, &this->meas_conf);
 
 	//init terminal and pass application terminal commands array as a parameter
 	uv_terminal_init(terminal_commands, commands_size());
@@ -95,6 +97,8 @@ void step(void* me) {
 		tilt_step(&this->tilt, step_ms);
 		feed_step(&this->feed, step_ms);
 		allopen_step(&this->allopen, step_ms);
+
+		measurement_step(&this->meas, step_ms, uv_adc_read(WIDTH1_AIN), uv_adc_read(WIDTH2_AIN));
 
 		remote_valve_step(&this->impl1, step_ms);
 		remote_valve_step(&this->impl2, step_ms);

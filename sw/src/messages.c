@@ -130,6 +130,13 @@ canopen_object_st obj_dict[] = {
 				.data_ptr = &this->saw.out.current
 		},
 		{
+				.main_index = ICU_SAW_IN_INDEX,
+				.sub_index = ICU_SAW_IN_SUBINDEX,
+				.type = ICU_SAW_IN_TYPE,
+				.permissions = ICU_SAW_IN_PERMISSIONS,
+				.data_ptr = &this->saw.in
+		},
+		{
 				.main_index = ICU_FEED_REQ_INDEX,
 				.sub_index = ICU_FEED_REQ_SUBINDEX,
 				.type = ICU_FEED_REQ_TYPE,
@@ -199,6 +206,85 @@ canopen_object_st obj_dict[] = {
 				.permissions = ICU_ALLOPEN_PARAM_PERMISSIONS,
 				.data_ptr = &this->allopen_conf
 		},
+		{
+				.main_index = ICU_WIDTH_MM_INDEX,
+				.sub_index = ICU_WIDTH_MM_SUBINDEX,
+				.type = ICU_WIDTH_MM_TYPE,
+				.permissions = ICU_WIDTH_MM_PERMISSIONS,
+				.data_ptr = &this->meas.width_mm
+		},
+		{
+				.main_index = ICU_WIDTH_RAW1_INDEX,
+				.sub_index = ICU_WIDTH_RAW1_SUBINDEX,
+				.type = ICU_WIDTH_RAW1_TYPE,
+				.permissions = ICU_WIDTH_RAW1_PERMISSIONS,
+				.data_ptr = &this->meas.width_raw1
+		},
+		{
+				.main_index = ICU_WIDTH_RAW2_INDEX,
+				.sub_index = ICU_WIDTH_RAW2_SUBINDEX,
+				.type = ICU_WIDTH_RAW2_TYPE,
+				.permissions = ICU_WIDTH_RAW2_PERMISSIONS,
+				.data_ptr = &this->meas.width_raw2
+		},
+		{
+				.main_index = ICU_WIDTH_REL_INDEX,
+				.sub_index = ICU_WIDTH_REL_SUBINDEX,
+				.type = ICU_WIDTH_REL_TYPE,
+				.permissions = ICU_WIDTH_REL_PERMISSIONS,
+				.data_ptr = &this->meas.width_rel
+		},
+		{
+				.main_index = ICU_WIDTH_CALIB_MIN_REQ_INDEX,
+				.sub_index = ICU_WIDTH_CALIB_MIN_REQ_SUBINDEX,
+				.type = ICU_WIDTH_CALIB_MIN_REQ_TYPE,
+				.permissions = ICU_WIDTH_CALIB_MIN_REQ_PERMISSIONS,
+				.data_ptr = &this->meas.calib_min_req
+		},
+		{
+				.main_index = ICU_WIDTH_CALIB_MAX_REQ_INDEX,
+				.sub_index = ICU_WIDTH_CALIB_MAX_REQ_SUBINDEX,
+				.type = ICU_WIDTH_CALIB_MAX_REQ_TYPE,
+				.permissions = ICU_WIDTH_CALIB_MAX_REQ_PERMISSIONS,
+				.data_ptr = &this->meas.calib_max_req
+		},
+		{
+				.main_index = ICU_WIDTH_CALIB_REQ_INDEX,
+				.sub_index = ICU_WIDTH_CALIB_REQ_SUBINDEX,
+				.type = ICU_WIDTH_CALIB_REQ_TYPE,
+				.permissions = ICU_WIDTH_CALIB_REQ_PERMISSIONS,
+				.data_ptr = &this->meas.calib_req
+		},
+		{
+				.main_index = ICU_WIDTH_CALIB_ADD_REQ_INDEX,
+				.sub_index = ICU_WIDTH_CALIB_ADD_REQ_SUBINDEX,
+				.type = ICU_WIDTH_CALIB_ADD_REQ_TYPE,
+				.permissions = ICU_WIDTH_CALIB_ADD_REQ_PERMISSIONS,
+				.data_ptr = &this->meas.add_req
+		},
+		{
+				.main_index = ICU_WIDTH_CALIB_CLEAR_REQ_INDEX,
+				.sub_index = ICU_WIDTH_CALIB_CLEAR_REQ_SUBINDEX,
+				.type = ICU_WIDTH_CALIB_CLEAR_REQ_TYPE,
+				.permissions = ICU_WIDTH_CALIB_CLEAR_REQ_PERMISSIONS,
+				.data_ptr = &this->meas.clear_req
+		},
+		{
+				.main_index = ICU_VOL_DM3_INDEX,
+				.sub_index = ICU_VOL_DM3_SUBINDEX,
+				.type = ICU_VOL_DM3_TYPE,
+				.permissions = ICU_VOL_DM3_PERMISSIONS,
+				.data_ptr = &this->meas.volume_dm3
+		},
+		{
+				.main_index = ICU_VOL_RESET_INDEX,
+				.sub_index = ICU_VOL_RESET_SUBINDEX,
+				.type = ICU_VOL_RESET_TYPE,
+				.permissions = ICU_VOL_RESET_PERMISSIONS,
+				.data_ptr = &this->meas.volume_reset_req
+		},
+
+
 
 
 		// other node's parameters
@@ -239,7 +325,7 @@ canopen_object_st obj_dict[] = {
 		},
 };
 
-int obj_dict_len() {
+uint32_t obj_dict_len(void) {
 	return sizeof(obj_dict) / sizeof(canopen_object_st);
 }
 
@@ -247,6 +333,7 @@ int obj_dict_len() {
 void stat_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
 void set_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
 void feed_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
+void meas_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
 
 
 const uv_command_st terminal_commands[] = {
@@ -272,6 +359,13 @@ const uv_command_st terminal_commands[] = {
 				.instructions = "Sets the feed fuzzy logic parameters.\n"
 						"Usage: feed <0/1/2> <\"speed\"/\"dist\"> <value>",
 				.callback = &feed_callb
+		},
+		{
+				.id = CMD_MEAS,
+				.str = "meas",
+				.instructions = "Prints the width measurement points\n"
+						"Usage: meas",
+				.callback = &meas_callb
 		}
 };
 
@@ -305,9 +399,9 @@ void stat_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 			this->feed.state,
 			this->feed_conf.feedopen_on_time_ms);
 	printf("Length: %i um\nTarget length: %i um\nLength calib %i\n",
-			this->feed.len_um,
-			this->feed.target_len_um,
-			this->feed_conf.len_calib);
+			(int) this->feed.len_um,
+			(int) this->feed.target_len_um,
+			(int) this->feed_conf.len_calib);
 }
 
 
@@ -425,5 +519,18 @@ void feed_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 				dev.feed.conf->fl[i].dist_mm,
 				dev.feed.conf->fl[i].max_speed);
 	}
+	printf("Feed close time: %i\n", dev.feed.conf->feedopen_on_time_ms);
 }
+
+
+void meas_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv) {
+	for (uint32_t i = 0; i < uv_vector_size(&dev.meas.conf->widths); i++) {
+		printf("%u: %u, %u mm\n",
+				(unsigned int) i,
+				*((uint16_t*) uv_vector_at(&dev.meas.conf->rel_widths, i)),
+				*((uint16_t*) uv_vector_at(&dev.meas.conf->widths, i)));
+	}
+}
+
+
 

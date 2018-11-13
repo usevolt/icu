@@ -19,18 +19,21 @@
 
 
 
-#include "../../inc/modules/feed.h"
+#include "feed.h"
 #include "can_icu.h"
 #include "main.h"
 #include "pin_mappings.h"
 #include "saw.h"
 #include "tilt.h"
 #include "feedopen.h"
+#include "measurement.h"
 #include <string.h>
 
 #define FEEDOPEN_DELAY_OFF_MS		1000
 #define FEEDOPEN_DELAY_ON_MS		60
 #define LEN_CALIB_DEF				66
+#define VOL_TOLERANCE_UM			500000
+
 
 #define GET_FEEDOPEN_TIME(this) ((this->feedopen_state == FEED_FEEDOPEN_STATE_ON) ? \
 						this->conf->feedopen_on_time_ms : this->conf->feedopen_off_time_ms)
@@ -90,12 +93,10 @@ void feed_init(feed_st *this, feed_conf_st *conf_ptr) {
 
 
 void feed_len_int(feed_st *this) {
-	if (input_get_request(&this->input, &this->conf->out_conf) *
-			((this->conf->out_conf.assembly_invert) ? -1 : 1) > 0) {
+	if (input_get_request(&this->input, &this->conf->out_conf) > 0) {
 		this->len_um += this->conf->len_calib * 100;
 	}
-	else if (input_get_request(&this->input, &this->conf->out_conf) *
-			((this->conf->out_conf.assembly_invert) ? -1 : 1) < 0) {
+	else if (input_get_request(&this->input, &this->conf->out_conf) < 0) {
 		this->len_um -= this->conf->len_calib * 100;
 	}
 	else {
@@ -104,6 +105,16 @@ void feed_len_int(feed_st *this) {
 }
 
 
+void feed_clear_len(feed_st *this) {
+	// if length is close to target length, ask
+	// measurement to add log volume to total volume
+	if (this->len_um - VOL_TOLERANCE_UM < this->target_len_um &&
+			this->len_um + VOL_TOLERANCE_UM > this->target_len_um) {
+		measurement_add_log_volume(&dev.meas);
+	}
+
+	this->len_um = 0;
+}
 
 
 void feed_step(feed_st *this, uint16_t step_ms) {

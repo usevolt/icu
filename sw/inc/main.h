@@ -21,6 +21,8 @@
 #include "saw.h"
 #include "feed.h"
 #include "allopen.h"
+#include "measurement.h"
+
 
 #define VND5050_CURRENT_AMPL_UA			1619
 #define VN5E01_CURRENT_AMPL_UA			13923
@@ -30,6 +32,8 @@
 #define SOLENOID_AVG_COUNT				4
 
 #define REMOTE_VALVE_DELAY_MS			1200
+
+#define VOLUME_EEPROM_ADDR				0
 
 
 /// @brief: Harvester head states
@@ -68,6 +72,8 @@ typedef struct _dev_st {
 	// impl2 is for feed & saw
 	remote_valve_st impl2;
 
+	measurement_st meas;
+
 	uv_data_start_t data_start;
 
 	allopen_conf_st allopen_conf;
@@ -76,6 +82,8 @@ typedef struct _dev_st {
 	feed_conf_st feed_conf;
 	saw_conf_st saw_conf;
 	tilt_conf_st tilt_conf;
+
+	measurement_conf_st meas_conf;
 
 	uv_data_end_t data_end;
 
