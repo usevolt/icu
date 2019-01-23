@@ -4,7 +4,7 @@ EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 9 14
+Sheet 9 12
 Title ""
 Date ""
 Rev ""
@@ -205,22 +205,22 @@ RESET
 Text Label 4800 1950 0    60   ~ 0
 RESET
 Wire Wire Line
-	5000 4400 5000 4900
+	5000 4400 5000 4500
 Wire Wire Line
-	5000 4500 5200 4500
+	5000 4500 5100 4500
 Wire Wire Line
 	5200 4400 5100 4400
 Wire Wire Line
 	5100 4400 5100 4500
 Connection ~ 5100 4500
 Wire Wire Line
-	3250 4100 5200 4100
+	3250 4100 3600 4100
 Connection ~ 5000 4100
 Connection ~ 4650 4100
 Connection ~ 4300 4100
 Connection ~ 3950 4100
 Wire Wire Line
-	3250 4400 5000 4400
+	3250 4400 3600 4400
 Connection ~ 3950 4400
 Connection ~ 4300 4400
 Connection ~ 4650 4400
@@ -258,9 +258,9 @@ Wire Wire Line
 	5200 3550 5000 3550
 Connection ~ 5000 3550
 Wire Wire Line
-	5000 3450 5000 4100
+	5000 3450 5000 3550
 Wire Wire Line
-	7100 3050 7450 3050
+	7100 3050 7250 3050
 Wire Wire Line
 	7100 3050 7100 2950
 Wire Wire Line
@@ -271,12 +271,12 @@ Wire Wire Line
 Wire Wire Line
 	7100 2850 7100 2750
 Wire Wire Line
-	7100 2750 7450 2750
+	7100 2750 7250 2750
 Connection ~ 7250 2750
 Wire Wire Line
 	7750 2750 8000 2750
 Wire Wire Line
-	8000 2750 8000 3100
+	8000 2750 8000 3050
 Wire Wire Line
 	8000 3050 7750 3050
 Connection ~ 8000 3050
@@ -289,11 +289,11 @@ Wire Wire Line
 Wire Wire Line
 	7600 5150 7000 5150
 Wire Wire Line
-	9150 3950 9850 3950
+	9150 3950 9500 3950
 Wire Wire Line
-	7000 3750 9850 3750
+	7000 3750 9250 3750
 Wire Wire Line
-	9700 3850 9700 4500
+	9700 3850 9700 4050
 Wire Wire Line
 	9700 4050 9850 4050
 Wire Wire Line
@@ -312,7 +312,7 @@ Wire Wire Line
 	9500 3800 9500 3950
 Connection ~ 9500 3950
 Wire Wire Line
-	9250 3450 9750 3450
+	9250 3450 9500 3450
 Wire Wire Line
 	9500 3500 9500 3450
 Connection ~ 9500 3450
@@ -357,13 +357,13 @@ F 7 "KEMET" H 2904 3059 60  0001 C CNN "Manufacturer"
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	2650 2850 2900 2850
+	2650 2850 2800 2850
 Wire Wire Line
 	2800 2850 2800 2750
 Wire Wire Line
-	2650 3150 2900 3150
+	2650 3150 2800 3150
 Wire Wire Line
-	2800 3050 2800 3300
+	2800 3050 2800 3150
 Connection ~ 2800 3150
 Connection ~ 2800 2850
 Wire Wire Line
@@ -644,14 +644,6 @@ Wire Wire Line
 	5200 2850 4900 2850
 Text HLabel 4900 2850 0    60   Input ~ 0
 AIN2
-Wire Wire Line
-	5200 2450 4900 2450
-Text HLabel 4900 2450 0    60   Input ~ 0
-AIN3
-Wire Wire Line
-	5200 2350 4900 2350
-Text HLabel 4900 2350 0    60   Input ~ 0
-AIN4
 Text HLabel 8300 4750 2    60   Input ~ 0
 DIN4
 $Comp
@@ -673,4 +665,62 @@ Wire Wire Line
 	7950 4750 7000 4750
 Wire Wire Line
 	8250 4750 8300 4750
+Wire Wire Line
+	5100 4500 5200 4500
+Wire Wire Line
+	5000 4100 5200 4100
+Wire Wire Line
+	4650 4100 5000 4100
+Wire Wire Line
+	4300 4100 4650 4100
+Wire Wire Line
+	3950 4100 4300 4100
+Wire Wire Line
+	3950 4400 4300 4400
+Wire Wire Line
+	4300 4400 4650 4400
+Wire Wire Line
+	4650 4400 5000 4400
+Wire Wire Line
+	5000 4500 5000 4600
+Wire Wire Line
+	5000 4600 5000 4700
+Wire Wire Line
+	5000 4700 5000 4800
+Wire Wire Line
+	5000 4800 5000 4900
+Wire Wire Line
+	5000 4000 5000 4100
+Wire Wire Line
+	5000 3900 5000 4000
+Wire Wire Line
+	5000 3800 5000 3900
+Wire Wire Line
+	5000 3700 5000 3800
+Wire Wire Line
+	5000 3550 5000 3700
+Wire Wire Line
+	7250 3050 7450 3050
+Wire Wire Line
+	7250 2750 7450 2750
+Wire Wire Line
+	8000 3050 8000 3100
+Wire Wire Line
+	9700 4050 9700 4500
+Wire Wire Line
+	9250 3750 9850 3750
+Wire Wire Line
+	9500 3950 9850 3950
+Wire Wire Line
+	9500 3450 9750 3450
+Wire Wire Line
+	2800 3150 2900 3150
+Wire Wire Line
+	2800 3150 2800 3300
+Wire Wire Line
+	2800 2850 2900 2850
+Wire Wire Line
+	3600 4400 3950 4400
+Wire Wire Line
+	3600 4100 3950 4100
 $EndSCHEMATC
