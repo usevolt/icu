@@ -3916,7 +3916,7 @@
     (arrow2a (pts (xy 209.747154 49.003578) (xy 209.160733 50.130082)))
     (arrow2b (pts (xy 209.747154 49.003578) (xy 210.333575 50.130082)))
   )
-  (gr_text "UW ISB 3.1\nUsevolt Oy" (at 197.4 119.6) (layer F.SilkS)
+  (gr_text "UW ICU 3.3\nUsevolt Oy" (at 197.4 119.6) (layer F.SilkS)
     (effects (font (size 1.5 1.5) (thickness 0.3)) (justify right))
   )
   (gr_line (start 140 49) (end 196 49) (layer Edge.Cuts) (width 0.1))
