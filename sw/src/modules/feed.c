@@ -40,11 +40,11 @@
 
 static const icu_feed_fl_st fl_def[FEED_FL_COUNT] = {
 		{
-				.dist_mm = 650,
+				.dist_mm = 500,
 				.max_speed = INPUT_MAX_REQ
 		},
 		{
-				.dist_mm = 150,
+				.dist_mm = 100,
 				.max_speed = INPUT_MAX_REQ / 10
 		},
 		{
