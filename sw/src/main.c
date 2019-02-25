@@ -34,8 +34,7 @@ void gpio_callback(uv_gpios_e gpio) {
 
 void init(dev_st* me) {
 	// load non-volatile data
-	if (uv_memory_load()) {
-		printf("*****\nresetting defaults\n*****\n");
+	if (uv_memory_load(MEMORY_APP_PARAMS)) {
 
 		allopen_conf_reset(&this->allopen_conf);
 		bladeopen_conf_reset(&this->bladeopen_conf);

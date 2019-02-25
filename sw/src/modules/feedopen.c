@@ -56,14 +56,22 @@ void feedopen_step(feedopen_st *this, uint16_t step_ms) {
 	uv_dual_output_dir_e dir = input_get_dir(&this->input, &this->conf->out_conf);
 	int8_t req = input_get_request(&this->input, &this->conf->out_conf);
 
-	if ((this->dir_req != DUAL_OUTPUT_OFF) && req == 0) {
+	if (req == 0) {
+		// manual direction request might be active, probably from all open or feeding
 
-		// manual direction request is active, probably from all open or feeding
-		dir = this->dir_req;
+		// leaving the feedopen valve open for a small delay depends on the bladeopen delay
+		if (!uv_delay_has_ended(&dev.bladeopen.open_delay)) {
+			dir = DUAL_OUTPUT_POS;
+		}
+		else {
+			dir = this->dir_req;
+		}
 		// manual request has to be updates every step cycle
 		this->dir_req = DUAL_OUTPUT_OFF;
 	}
 	else {
+		// end the bladeopen delay
+		uv_delay_end(&dev.bladeopen.open_delay);
 	}
 
 	uv_dual_output_set(&this->out, dir);

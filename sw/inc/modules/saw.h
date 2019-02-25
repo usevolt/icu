@@ -47,6 +47,8 @@ typedef struct {
 	uv_dual_output_st out;
 
 	uint8_t in;
+	// true for 1 step cycle when the saw just came in
+	uint8_t returned;
 	bool saw_moved;
 	uv_delay_st in_delay;
 
@@ -89,6 +91,10 @@ static inline void saw_enable(saw_st *this) {
 
 static inline uint8_t saw_is_in(saw_st *this) {
 	return this->in;
+}
+
+static inline uint8_t saw_returned(saw_st *this) {
+	return this->returned;
 }
 
 

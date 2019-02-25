@@ -46,6 +46,10 @@ typedef struct {
 
 	bladeopen_conf_st *conf;
 
+	uv_delay_st open_delay;
+
+	int8_t last_req;
+
 } bladeopen_st;
 
 

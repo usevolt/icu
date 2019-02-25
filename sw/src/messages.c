@@ -109,6 +109,34 @@ canopen_object_st obj_dict[] = {
 				.data_ptr = &this->tilt.out.current
 		},
 		{
+				.main_index = ICU_TILT_DIR_INDEX,
+				.sub_index = ICU_TILT_DIR_SUBINDEX,
+				.type = ICU_TILT_DIR_TYPE,
+				.permissions = ICU_TILT_DIR_PERMISSIONS,
+				.data_ptr = &this->tilt.dir
+		},
+		{
+				.main_index = ICU_TILTFLOAT_STATUS_INDEX,
+				.sub_index = ICU_TILTFLOAT_STATUS_SUBINDEX,
+				.type = ICU_TILTFLOAT_STATUS_TYPE,
+				.permissions = ICU_TILTFLOAT_STATUS_PERMISSIONS,
+				.data_ptr = &this->tilt.float_out.state
+		},
+		{
+				.main_index = ICU_TILTFLOAT_CURRENT_INDEX,
+				.sub_index = ICU_TILTFLOAT_CURRENT_SUBINDEX,
+				.type = ICU_TILTFLOAT_CURRENT_TYPE,
+				.permissions = ICU_TILTFLOAT_CURRENT_PERMISSIONS,
+				.data_ptr = &this->tilt.float_out.current
+		},
+		{
+				.main_index = ICU_TILTFLOAT_ENABLE_INDEX,
+				.sub_index = ICU_TILTFLOAT_ENABLE_SUBINDEX,
+				.type = ICU_TILTFLOAT_ENABLE_TYPE,
+				.permissions = ICU_TILTFLOAT_ENABLE_PERMISSIONS,
+				.data_ptr = &this->tilt_conf.float_enable
+		},
+		{
 				.main_index = ICU_SAW_REQ_INDEX,
 				.sub_index = ICU_SAW_REQ_SUBINDEX,
 				.type = ICU_SAW_REQ_TYPE,
@@ -389,6 +417,11 @@ void stat_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 	printf("Tilt: request: %i, current: %u\n",
 			tilt_get_request(&this->tilt),
 			tilt_get_current(&this->tilt));
+	printf("Tilt dir: %s\n",
+			(tilt_get_dir(&dev.tilt) == ICU_TILT_DIR_UP) ? "UP" : "DOWN");
+	printf("Tilt float state: %u, current: %i\n",
+			uv_output_get_state(&dev.tilt.float_out),
+			tilt_get_float_current(&dev.tilt));
 	printf("Saw: request: %i, current: %u In: %u\n",
 			saw_get_request(&this->saw),
 			saw_get_current(&this->saw),

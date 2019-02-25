@@ -42,6 +42,7 @@ void saw_init(saw_st *this, saw_conf_st *conf_ptr) {
 	this->conf = conf_ptr;
 
 	this->in = 0;
+	this->returned = 0;
 	this->saw_moved = false;
 	uv_gpio_init_input(SAW_IN, PULL_DOWN_ENABLED);
 
@@ -64,7 +65,15 @@ void saw_step(saw_st *this, uint16_t step_ms) {
 
 	int8_t req = input_get_request(&this->input, &this->conf->out_conf);
 
+	if (uv_gpio_get(SAW_IN) &&
+			!this->in) {
+		this->returned = 1;
+	}
+	else {
+		this->returned = 0;
+	}
 	this->in = uv_gpio_get(SAW_IN);
+
 	if (req != 0) {
 		this->saw_moved = true;
 	}

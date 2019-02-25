@@ -25,6 +25,9 @@
 #include "pin_mappings.h"
 
 
+#define OPEN_DELAY_MS		1000
+
+
 void bladeopen_conf_reset(bladeopen_conf_st *this) {
 	this->out_conf.acc = ICU_CONF_ACC_MAX;
 	this->out_conf.dec = ICU_CONF_DEC_MAX;
@@ -45,6 +48,10 @@ void bladeopen_init(bladeopen_st *this, bladeopen_conf_st *conf_ptr) {
 			SOLENOID_FAULT_CURRENT_MA, SOLENOID_AVG_COUNT,
 			ICU_EMCY_BLADEOPEN_OVERCURRENT, ICU_EMCY_BLADEOPEN_FAULT);
 
+	uv_delay_init(&this->open_delay, OPEN_DELAY_MS);
+	uv_delay_end(&this->open_delay);
+	this->last_req = 0;
+
 }
 
 
@@ -55,12 +62,28 @@ void bladeopen_step(bladeopen_st *this, uint16_t step_ms) {
 
 	int8_t req = input_get_request(&this->input, &this->conf->out_conf);
 
-	if ((this->dir_req != DUAL_OUTPUT_OFF) && req == 0) {
-		// manual direction request is active, probably from all open or feeding
-		uv_dual_output_set(&this->out, this->dir_req);
+	if (req == 0) {
+		// manual direction request might be active, probably from all open or feeding
+
+		// when request was stopped, wait a moment before closing the valve
+		if ((this->last_req > 0) &&
+				!this->dir_req) {
+			uv_delay_init(&this->open_delay, OPEN_DELAY_MS);
+		}
+
+		uv_delay(&this->open_delay, step_ms);
+		if (uv_delay_has_ended(&this->open_delay)) {
+			uv_dual_output_set(&this->out, this->dir_req);
+		}
+		else {
+			// open the valve for a small delay
+			uv_dual_output_set(&this->out, DUAL_OUTPUT_POS);
+		}
+		this->last_req = this->dir_req;
 		this->dir_req = DUAL_OUTPUT_OFF;
 	}
 	else {
+		uv_delay_end(&this->open_delay);
 		// normal operation
 		uv_dual_output_set(&this->out, input_get_dir_from_req(req));
 	}
