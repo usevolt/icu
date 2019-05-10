@@ -71,6 +71,11 @@ void bladeopen_step(bladeopen_st *this, uint16_t step_ms) {
 			uv_delay_init(&this->open_delay, OPEN_DELAY_MS);
 		}
 
+		// do not delay if the direction request is once again applied
+		if (this->dir_req) {
+			uv_delay_end(&this->open_delay);
+		}
+
 		uv_delay(&this->open_delay, step_ms);
 		if (uv_delay_has_ended(&this->open_delay)) {
 			uv_dual_output_set(&this->out, this->dir_req);
