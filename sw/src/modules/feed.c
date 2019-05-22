@@ -221,12 +221,18 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 
 		// close feeders while feeding
 		if (req) {
-			if (uv_delay(&this->feedopen_delay, step_ms)) {
-				// toggle feedopen state
-				this->feedopen_state = (this->feedopen_state == FEED_FEEDOPEN_STATE_ON) ?
-						FEED_FEEDOPEN_STATE_OFF : FEED_FEEDOPEN_STATE_ON;
-				// init delay again
-				uv_delay_init(&this->feedopen_delay, GET_FEEDOPEN_TIME(this));
+			// if feedopen on time is zero, repowering the accumulator is disabled
+			if (this->conf->feedopen_on_time_ms == 0) {
+				this->feedopen_state = FEED_FEEDOPEN_STATE_OFF;
+			}
+			else {
+				if (uv_delay(&this->feedopen_delay, step_ms)) {
+					// toggle feedopen state
+					this->feedopen_state = (this->feedopen_state == FEED_FEEDOPEN_STATE_ON) ?
+							FEED_FEEDOPEN_STATE_OFF : FEED_FEEDOPEN_STATE_ON;
+					// init delay again
+					uv_delay_init(&this->feedopen_delay, GET_FEEDOPEN_TIME(this));
+				}
 			}
 
 			if (this->feedopen_state == FEED_FEEDOPEN_STATE_ON) {
