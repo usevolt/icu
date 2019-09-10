@@ -53,6 +53,8 @@ void init(dev_st* me) {
 	this->fsb.door_sw2 = 0;
 	this->fsb.seat_sw = 0;
 
+	this->hcu.hydr_pressure = 0;
+
 	uv_gpio_interrupt_init(&gpio_callback);
 
 	remote_valve_init(&this->impl1, REMOTE_VALVE_DELAY_MS, false);

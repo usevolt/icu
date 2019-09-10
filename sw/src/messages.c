@@ -351,6 +351,13 @@ canopen_object_st obj_dict[] = {
 				.permissions = FSB_SEATSW_PERMISSIONS,
 				.data_ptr = &this->fsb.seat_sw
 		},
+		{
+				.main_index = ICU_HCU_INDEX_OFFSET + HCU_PRESSURE_INDEX,
+				.sub_index = HCU_PRESSURE_SUBINDEX,
+				.type = HCU_PRESSURE_TYPE,
+				.permissions = HCU_PRESSURE_PERMISSIONS,
+				.data_ptr = &this->hcu.hydr_pressure
+		}
 };
 
 uint32_t obj_dict_len(void) {

@@ -46,6 +46,9 @@ typedef struct {
 
 	tilt_conf_st *conf;
 
+	// manual request
+	uv_dual_output_dir_e dir_req;
+
 	uv_delay_st liftup_delay;
 	bool lifted_up;
 
@@ -68,6 +71,10 @@ static inline int16_t tilt_get_current(tilt_st *this) {
 
 static inline icu_tilt_dir_e tilt_get_dir(tilt_st *this) {
 	return this->dir;
+}
+
+static inline void tilt_set_dir_req(tilt_st *this, uv_dual_output_dir_e dir) {
+	this->dir_req = dir;
 }
 
 static inline int16_t tilt_get_float_current(tilt_st *this) {

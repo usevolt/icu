@@ -26,6 +26,13 @@
 #include "input.h"
 
 
+typedef enum {
+	ALLOPEN_TILT_STATE_NONE = 0,
+	ALLOPEN_TILT_STATE_WAIT,
+	ALLOPEN_TILT_STATE_UP,
+	ALLOPEN_TILT_STATE_DOWN
+} allopen_tilt_state_e;
+
 
 /// @brief: Boom fold configuration settings. Should be stored in non-volatile memory
 typedef struct {
@@ -44,6 +51,9 @@ typedef struct {
 	input_st input;
 
 	allopen_conf_st *conf;
+
+	allopen_tilt_state_e tilt_state;
+	uv_delay_st tilt_delay;
 
 	uv_delay_st close_delay;
 

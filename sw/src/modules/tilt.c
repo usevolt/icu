@@ -55,6 +55,7 @@ void tilt_init(tilt_st *this, tilt_conf_st *conf_ptr) {
 	uv_delay_init(&this->liftup_delay, LIFTUP_DELAY_MS);
 	this->lifted_up = true;
 	this->dir = ICU_TILT_DIR_UP;
+	this->dir_req = DUAL_OUTPUT_OFF;
 
 }
 
@@ -102,7 +103,11 @@ void tilt_step(tilt_st *this, uint16_t step_ms) {
 	}
 
 
-	uv_dual_output_set(&this->out, input_get_dir_from_req(req));
+	uv_dual_output_dir_e dir = input_get_dir_from_req(req);
+	if (req == 0) {
+		dir = this->dir_req;
+	}
+	uv_dual_output_set(&this->out, dir);
 	uv_dual_output_step(&this->out, step_ms);
 
 	uv_output_step(&this->float_out, step_ms);

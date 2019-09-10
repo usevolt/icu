@@ -56,6 +56,9 @@ typedef struct _dev_st {
 		uint8_t door_sw2;
 		uint8_t seat_sw;
 	} fsb;
+	struct {
+		int16_t hydr_pressure;
+	} hcu;
 
 	uint16_t total_current;
 

@@ -25,6 +25,8 @@
 #include "pin_mappings.h"
 
 
+#define TILT_DELAY_MS		500
+#define TILT_PRESS_LIMIT	150
 
 
 void allopen_conf_reset(allopen_conf_st *this) {
@@ -42,11 +44,17 @@ void allopen_init(allopen_st *this, allopen_conf_st *conf_ptr) {
 	input_init(&this->input);
 	this->conf = conf_ptr;
 	uv_delay_init(&this->close_delay, this->conf->close_delay_ms);
+	this->tilt_state = ALLOPEN_TILT_STATE_NONE;
+	uv_delay_init(&this->tilt_delay, TILT_DELAY_MS);
 }
 
 
 void allopen_step(allopen_st *this, uint16_t step_ms) {
 	input_step(&this->input, step_ms);
+
+	int32_t req = input_get_request(&this->input, &this->conf->out_conf);
+
+	tilt_set_dir_req(&dev.tilt, DUAL_OUTPUT_OFF);
 
 	if (input_get_request(&this->input, &this->conf->out_conf) *
 			((this->conf->out_conf.assembly_invert) ? -1 : 1) > 0) {
@@ -54,12 +62,72 @@ void allopen_step(allopen_st *this, uint16_t step_ms) {
 		bladeopen_set_dir_req(&dev.bladeopen, DUAL_OUTPUT_POS);
 		feedopen_set_dir_req(&dev.feedopen, DUAL_OUTPUT_POS);
 
+		// TILT LOGIC UP
+		if (this->tilt_state == ALLOPEN_TILT_STATE_NONE) {
+			if (dev.hcu.hydr_pressure > TILT_PRESS_LIMIT) {
+				if (uv_delay(&this->tilt_delay, step_ms)) {
+					this->tilt_state = ALLOPEN_TILT_STATE_WAIT;
+					uv_delay_init(&this->tilt_delay, TILT_DELAY_MS);
+				}
+			}
+			else {
+				uv_delay_init(&this->tilt_delay, TILT_DELAY_MS);
+			}
+		}
+		else if (this->tilt_state == ALLOPEN_TILT_STATE_WAIT) {
+			req = 0;
+			if (uv_delay(&this->tilt_delay, step_ms)) {
+				this->tilt_state = ALLOPEN_TILT_STATE_UP;
+			}
+		}
+		else if (this->tilt_state == ALLOPEN_TILT_STATE_UP) {
+			tilt_set_dir_req(&dev.tilt, (dev.tilt_conf.out_conf.assembly_invert) ?
+					DUAL_OUTPUT_NEG : DUAL_OUTPUT_POS);
+			req = dev.tilt_conf.out_conf.max_speed_a;
+			uv_delay_init(&this->tilt_delay, TILT_DELAY_MS);
+		}
+		else {
+			this->tilt_state = ALLOPEN_TILT_STATE_NONE;
+			uv_delay_init(&this->tilt_delay, TILT_DELAY_MS);
+		}
+
 		uv_delay_init(&this->close_delay, this->conf->close_delay_ms);
 	}
 	else if ((input_get_request(&this->input, &this->conf->out_conf) *
 			((this->conf->out_conf.assembly_invert) ? -1 : 1)) < 0) {
 		// all close
 		bladeopen_set_dir_req(&dev.bladeopen, DUAL_OUTPUT_NEG);
+
+		// TILT LOGIC DOWN
+		// TILT LOGIC
+		if (this->tilt_state == ALLOPEN_TILT_STATE_NONE) {
+			if (dev.hcu.hydr_pressure > TILT_PRESS_LIMIT) {
+				if (uv_delay(&this->tilt_delay, step_ms)) {
+					this->tilt_state = ALLOPEN_TILT_STATE_WAIT;
+					uv_delay_init(&this->tilt_delay, TILT_DELAY_MS);
+				}
+			}
+			else {
+				uv_delay_init(&this->tilt_delay, TILT_DELAY_MS);
+			}
+		}
+		else if (this->tilt_state == ALLOPEN_TILT_STATE_WAIT) {
+			req = 0;
+			if (uv_delay(&this->tilt_delay, step_ms)) {
+				this->tilt_state = ALLOPEN_TILT_STATE_DOWN;
+			}
+		}
+		else if (this->tilt_state == ALLOPEN_TILT_STATE_DOWN) {
+			tilt_set_dir_req(&dev.tilt, (dev.tilt_conf.out_conf.assembly_invert) ?
+					DUAL_OUTPUT_POS : DUAL_OUTPUT_NEG);
+			req = dev.tilt_conf.out_conf.max_speed_b;
+			uv_delay_init(&this->tilt_delay, TILT_DELAY_MS);
+		}
+		else {
+			this->tilt_state = ALLOPEN_TILT_STATE_NONE;
+			uv_delay_init(&this->tilt_delay, TILT_DELAY_MS);
+		}
+
 
 		uv_delay(&this->close_delay, step_ms);
 		if (uv_delay_has_ended(&this->close_delay)) {
@@ -69,11 +137,12 @@ void allopen_step(allopen_st *this, uint16_t step_ms) {
 	else {
 		// do nothing
 		uv_delay_init(&this->close_delay, this->conf->close_delay_ms);
+		this->tilt_state = ALLOPEN_TILT_STATE_NONE;
+		uv_delay_init(&this->tilt_delay, TILT_DELAY_MS);
 	}
 
 	remote_valve_set_request(&dev.impl1, this,
-			input_get_request(&this->input, &this->conf->out_conf),
-			&this->conf->out_conf);
+			req, &this->conf->out_conf);
 
 }
 
