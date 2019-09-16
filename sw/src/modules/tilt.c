@@ -26,6 +26,10 @@
 #include "feed.h"
 
 
+#define LIFTUP_DELAY_MS			5000
+#define STATE_DELAY_MS			500
+
+
 void tilt_conf_reset(tilt_conf_st *this) {
 	this->out_conf.acc = ICU_CONF_ACC_MAX;
 	this->out_conf.dec = ICU_CONF_DEC_MAX;
@@ -33,6 +37,7 @@ void tilt_conf_reset(tilt_conf_st *this) {
 	this->out_conf.assembly_invert = false;
 	this->out_conf.max_speed_a = 8;
 	this->out_conf.max_speed_b = 8;
+	this->float_enable = 1;
 }
 
 
@@ -45,6 +50,14 @@ void tilt_init(tilt_st *this, tilt_conf_st *conf_ptr) {
 			SOLENOID_FAULT_CURRENT_MA, SOLENOID_AVG_COUNT,
 			ICU_EMCY_TILT_OVERCURRENT, ICU_EMCY_TILT_FAULT);
 
+//	uv_output_init(&this->float_out, TILTFLOAT_SENSE, TILTFLOAT, VND5050_CURRENT_AMPL_UA,
+//			4000, 6000, 10, ICU_EMCY_TILTFLOAT_OVERCURRENT, ICU_EMCY_TILTFLOAT_FAULT);
+
+	uv_delay_init(&this->liftup_delay, LIFTUP_DELAY_MS);
+	this->lifted_up = true;
+	this->dir = ICU_TILT_DIR_UP;
+	this->dir_req = DUAL_OUTPUT_OFF;
+	this->state = TILT_STATE_NONE;
 }
 
 
@@ -59,8 +72,66 @@ void tilt_step(tilt_st *this, uint16_t step_ms) {
 		req = 0;
 	}
 
-	uv_dual_output_set(&this->out, input_get_dir_from_req(req));
+//	// float logic
+//	if (saw_returned(&dev.saw) &&
+//			this->lifted_up &&
+//			req == 0) {
+//		if (this->conf->float_enable) {
+//			uv_output_set_state(&this->float_out, OUTPUT_STATE_ON);
+//		}
+//		this->lifted_up = false;
+//	}
+//	else {
+//		int16_t r = uv_dual_output_get_current(&this->out) *
+//				((this->conf->out_conf.assembly_invert) ? -1 : 1);
+//		if (r > 0) {
+//			this->dir = ICU_TILT_DIR_UP;
+//			uv_output_set_state(&this->float_out, OUTPUT_STATE_OFF);
+//
+//			if (uv_delay(&this->liftup_delay, step_ms)) {
+//				this->lifted_up = true;
+//			}
+//		}
+//		else if (r < 0) {
+//			this->dir = ICU_TILT_DIR_DOWN;
+//			if (this->conf->float_enable) {
+//				uv_output_set_state(&this->float_out, OUTPUT_STATE_ON);
+//			}
+//		}
+//		else {
+//			uv_delay_init(&this->liftup_delay, LIFTUP_DELAY_MS);
+//		}
+//	}
+
+	uv_dual_output_dir_e dir = input_get_dir_from_req(req);
+	if (req == 0) {
+		dir = this->dir_req;
+	}
+
+	if (uv_dual_output_get_current(&this->out) < 0) {
+		// tilt requested to go down, time for feedclosing logic
+		if (this->state == TILT_STATE_NONE) {
+			if (uv_delay(&this->state_delay, step_ms)) {
+				this->state = TILT_STATE_TILTCLOSE;
+			}
+			else {
+				// keep tilt requests zero and close wheels
+				// for a small duration
+				req = 0;
+				dir = DUAL_OUTPUT_OFF;
+				feedopen_set_dir_req(&dev.feedopen, DUAL_OUTPUT_NEG);
+			}
+		}
+	}
+	else {
+		this->state = TILT_STATE_NONE;
+		uv_delay_init(&this->state_delay, STATE_DELAY_MS);
+	}
+
+	uv_dual_output_set(&this->out, dir);
 	uv_dual_output_step(&this->out, step_ms);
+
+//	uv_output_step(&this->float_out, step_ms);
 
 	remote_valve_set_request(&dev.impl1, this, req, &this->conf->out_conf);
 

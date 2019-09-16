@@ -29,7 +29,13 @@
 /// @brief: Boom fold configuration settings. Should be stored in non-volatile memory
 typedef struct {
 	icu_conf_st out_conf;
+	uint8_t float_enable;
 } tilt_conf_st;
+
+typedef enum {
+	TILT_STATE_NONE = 0,
+	TILT_STATE_TILTCLOSE
+} tilt_state_e;
 
 /// @brief: Resets the non-volatile settings to defaults
 void tilt_conf_reset(tilt_conf_st *this);
@@ -41,7 +47,20 @@ typedef struct {
 
 	uv_dual_output_st out;
 
+	// On CM_6.2.2 float is not installed and should be commented out
+//	uv_output_st float_out;
+	tilt_state_e state;
+	uv_delay_st state_delay;
+
 	tilt_conf_st *conf;
+
+	// manual request
+	uv_dual_output_dir_e dir_req;
+
+	uv_delay_st liftup_delay;
+	bool lifted_up;
+
+	icu_tilt_dir_e dir;
 
 } tilt_st;
 
@@ -58,6 +77,18 @@ static inline int16_t tilt_get_current(tilt_st *this) {
 	return uv_dual_output_get_current(&this->out);
 }
 
+static inline icu_tilt_dir_e tilt_get_dir(tilt_st *this) {
+	return this->dir;
+}
+
+static inline void tilt_set_dir_req(tilt_st *this, uv_dual_output_dir_e dir) {
+	this->dir_req = dir;
+}
+
+//static inline int16_t tilt_get_float_current(tilt_st *this) {
+//	return uv_output_get_current(&this->float_out);
+//}
+
 
 static inline int8_t tilt_get_request(tilt_st *this) {
 	return input_get_request(&this->input, &this->conf->out_conf);
@@ -66,11 +97,13 @@ static inline int8_t tilt_get_request(tilt_st *this) {
 
 static inline void tilt_disable(tilt_st *this) {
 	uv_dual_output_disable(&this->out);
+//	uv_output_disable(&this->float_out);
 }
 
 
 static inline void tilt_enable(tilt_st *this) {
 	uv_dual_output_enable(&this->out);
+//	uv_output_enable(&this->float_out);
 }
 
 
