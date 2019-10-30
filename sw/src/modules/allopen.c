@@ -54,10 +54,14 @@ void allopen_step(allopen_st *this, uint16_t step_ms) {
 
 	int32_t req = input_get_request(&this->input, &this->conf->out_conf);
 
+	// allopen disabled if feed is on, since it is used to control the series/parallel feeding
+	if (feed_get_request(&dev.feed)) {
+		req = 0;
+	}
+
 	tilt_set_dir_req(&dev.tilt, DUAL_OUTPUT_OFF);
 
-	if (input_get_request(&this->input, &this->conf->out_conf) *
-			((this->conf->out_conf.assembly_invert) ? -1 : 1) > 0) {
+	if (req * ((this->conf->out_conf.assembly_invert) ? -1 : 1) > 0) {
 		// all open
 		bladeopen_set_dir_req(&dev.bladeopen, DUAL_OUTPUT_POS);
 		feedopen_set_dir_req(&dev.feedopen, DUAL_OUTPUT_POS);
@@ -93,8 +97,7 @@ void allopen_step(allopen_st *this, uint16_t step_ms) {
 
 		uv_delay_init(&this->close_delay, this->conf->close_delay_ms);
 	}
-	else if ((input_get_request(&this->input, &this->conf->out_conf) *
-			((this->conf->out_conf.assembly_invert) ? -1 : 1)) < 0) {
+	else if ((req * ((this->conf->out_conf.assembly_invert) ? -1 : 1)) < 0) {
 		// all close
 		bladeopen_set_dir_req(&dev.bladeopen, DUAL_OUTPUT_NEG);
 
