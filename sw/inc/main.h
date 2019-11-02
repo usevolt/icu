@@ -74,6 +74,8 @@ typedef struct _dev_st {
 
 	measurement_st meas;
 
+	uv_output_st out6;
+
 	uv_data_start_t data_start;
 
 	allopen_conf_st allopen_conf;

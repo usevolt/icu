@@ -51,6 +51,25 @@ void measurement_init(measurement_st *this, measurement_conf_st *conf) {
 }
 
 
+// default values after reset. These were measured with Lauri Lassila CM_6.3.2
+static const uint16_t relw_def[6] = {
+		57,
+		80,
+		251,
+		318,
+		664,
+		915
+};
+static const uint16_t w_def[sizeof(relw_def) / sizeof(relw_def[0])] = {
+		42,
+		60,
+		95,
+		107,
+		185,
+		250
+};
+
+
 void measurement_reset(measurement_conf_st *this) {
 	this->width_prefs.width1_min = 0;
 	this->width_prefs.width1_max = 5000;
@@ -60,6 +79,10 @@ void measurement_reset(measurement_conf_st *this) {
 			WIDTH_LOOK_UP_TABLE_SIZE, sizeof(this->width_buffer[0]));
 	uv_vector_init(&this->rel_widths, this->rel_width_buffer,
 			WIDTH_LOOK_UP_TABLE_SIZE, sizeof(this->rel_width_buffer[0]));
+	for (uint8_t i = 0; i < sizeof(relw_def) / sizeof(relw_def[0]); i++) {
+		uv_vector_push_back(&this->rel_widths, (void*) &relw_def[i]);
+		uv_vector_push_back(&this->widths, (void*) &w_def[i]);
+	}
 
 }
 

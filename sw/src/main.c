@@ -68,6 +68,11 @@ void init(dev_st* me) {
 
 	measurement_init(&this->meas, &this->meas_conf);
 
+	// CM_6.2.2 speciality: out6 controls the customer installed "pressure open" valve
+	uv_output_init(&this->out6, OUT6_SENSE, OUT6,
+			VND5050_CURRENT_AMPL_UA, 5000, 8000, SOLENOID_AVG_COUNT, 0, 0);
+
+
 	//init terminal and pass application terminal commands array as a parameter
 	uv_terminal_init(terminal_commands, commands_size());
 
@@ -109,6 +114,19 @@ void step(void* me) {
 				abs(tilt_get_current(&this->tilt)) +
 				abs(feed_get_current(&this->feed));
 
+
+		uv_output_step(&this->out6, step_ms);
+		if (saw_get_request(&this->saw) ||
+				tilt_get_request(&this->tilt) ||
+				feedopen_get_request(&this->feedopen) ||
+				bladeopen_get_request(&this->bladeopen) ||
+				allopen_get_request(&this->allopen) ||
+				feed_get_request(&this->feed)) {
+			uv_output_set_state(&this->out6, OUTPUT_STATE_ON);
+		}
+		else {
+			uv_output_set_state(&this->out6, OUTPUT_STATE_OFF);
+		}
 
 		// outputs are disables if FSB is not found, ignition key is not in ON state,
 		// or emergency switch is pressed

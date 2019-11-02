@@ -39,6 +39,9 @@
 #define FEED_SENSE		ADC0_0
 
 
+#define OUT6			P0_12
+#define OUT6_SENSE		ADC0_1
+
 
 
 #endif /* UW_MB_SRC_PIN_MAPPINGS_H_ */

@@ -53,9 +53,6 @@ void tilt_init(tilt_st *this, tilt_conf_st *conf_ptr) {
 //	uv_output_init(&this->float_out, TILTFLOAT_SENSE, TILTFLOAT, VND5050_CURRENT_AMPL_UA,
 //			4000, 6000, 10, ICU_EMCY_TILTFLOAT_OVERCURRENT, ICU_EMCY_TILTFLOAT_FAULT);
 
-	uv_delay_init(&this->liftup_delay, LIFTUP_DELAY_MS);
-	this->lifted_up = true;
-	this->dir = ICU_TILT_DIR_UP;
 	this->dir_req = DUAL_OUTPUT_OFF;
 	this->state = TILT_STATE_NONE;
 }

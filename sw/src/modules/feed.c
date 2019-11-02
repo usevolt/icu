@@ -35,6 +35,8 @@
 #define VOL_TOLERANCE_UM			500000
 
 
+#define CLOSE_PARALLEL_FEEDING		1
+
 #define GET_FEEDOPEN_TIME(this) ((this->feedopen_state == FEED_FEEDOPEN_STATE_ON) ? \
 						this->conf->feedopen_on_time_ms : this->conf->feedopen_off_time_ms)
 
@@ -43,6 +45,16 @@ static const icu_feed_fl_st fl_def[FEED_FL_COUNT] = {
 				.dist_mm = 650,
 				.max_speed = INPUT_MAX_REQ
 		},
+#if CLOSE_PARALLEL_FEEDING
+		{
+				.dist_mm = 150,
+				.max_speed = INPUT_MAX_REQ / 5
+		},
+		{
+				.dist_mm = 50,
+				.max_speed = 10
+		}
+#else
 		{
 				.dist_mm = 150,
 				.max_speed = INPUT_MAX_REQ / 10
@@ -51,6 +63,7 @@ static const icu_feed_fl_st fl_def[FEED_FL_COUNT] = {
 				.dist_mm = 50,
 				.max_speed = 5
 		}
+#endif
 };
 
 
@@ -174,8 +187,8 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 				// otherwise in normal mode
 				else {
 					this->state = ICU_FEED_STATE_ON;
-					this->fl_index = 0;
 				}
+				this->fl_index = 0;
 			}
 
 			if (this->state == ICU_FEED_STATE_ON) {
@@ -213,10 +226,16 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 			}
 		}
 
-		// parallel feeding
+		// parallel feeding when tilt is pressed
+#if CLOSE_PARALLEL_FEEDING
+		if (tilt_get_request(&dev.tilt) || this->fl_index != 0) {
+			series_feed = false;
+		}
+#else
 		if (tilt_get_request(&dev.tilt)) {
 			series_feed = false;
 		}
+#endif
 
 
 		// close feeders while feeding
@@ -259,7 +278,8 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 		s = OUTPUT_STATE_OFF;
 	}
 	else {
-		s = (series_feed != this->conf->out_conf.assembly_invert) ? OUTPUT_STATE_ON : OUTPUT_STATE_OFF;
+		s = (series_feed != this->conf->out_conf.assembly_invert) ?
+				OUTPUT_STATE_ON : OUTPUT_STATE_OFF;
 	}
 	uv_output_set(&this->series_out, s);
 	uv_output_step(&this->series_out, step_ms);

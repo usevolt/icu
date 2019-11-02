@@ -402,6 +402,9 @@ void stat_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 			(int) this->feed.len_um,
 			(int) this->feed.target_len_um,
 			(int) this->feed_conf.len_calib);
+	printf("out6 state: %u, current: %i mA\n",
+			uv_output_get_state(&this->out6),
+			uv_output_get_current(&this->out6));
 }
 
 
