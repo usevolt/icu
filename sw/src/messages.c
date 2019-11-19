@@ -95,6 +95,13 @@ canopen_object_st obj_dict[] = {
 				.data_ptr = &this->tilt.input.request
 		},
 		{
+				.main_index = ICU_TILT_REQ2_INDEX,
+				.sub_index = ICU_TILT_REQ2_SUBINDEX,
+				.type = ICU_TILT_REQ2_TYPE,
+				.permissions = ICU_TILT_REQ2_PERMISSIONS,
+				.data_ptr = &this->tilt.input2.request
+		},
+		{
 				.main_index = ICU_TILT_PARAM_INDEX,
 				.array_max_size = ICU_TILT_PARAM_ARRAY_MAX_SIZE,
 				.type = ICU_TILT_PARAM_TYPE,
@@ -135,6 +142,13 @@ canopen_object_st obj_dict[] = {
 				.type = ICU_TILTFLOAT_ENABLE_TYPE,
 				.permissions = ICU_TILTFLOAT_ENABLE_PERMISSIONS,
 				.data_ptr = &this->tilt_conf.float_enable
+		},
+		{
+				.main_index = ICU_TILT_ONTHUMB_STATUS_INDEX,
+				.sub_index = ICU_TILT_ONTHUMB_STATUS_SUBINDEX,
+				.type = ICU_TILT_ONTHUMB_STATUS_TYPE,
+				.permissions = ICU_TILT_ONTHUMB_STATUS_PERMISSIONS,
+				.data_ptr = &this->tilt_conf.on_thumb
 		},
 		{
 				.main_index = ICU_SAW_REQ_INDEX,
@@ -369,6 +383,7 @@ void stat_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 void set_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
 void feed_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
 void meas_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
+void tiltonthumb_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv);
 
 
 const uv_command_st terminal_commands[] = {
@@ -401,6 +416,13 @@ const uv_command_st terminal_commands[] = {
 				.instructions = "Prints the width measurement points\n"
 						"Usage: meas",
 				.callback = &meas_callb
+		},
+		{
+				.id = CMD_TILTONTHUMB,
+				.str = "tiltonthumb",
+				.instructions = "Sets the tilt to operate on left thumb.\n"
+						"Usage: tiltonthumpb <1/0>",
+				.callback = &tiltonthumb_callb
 		}
 };
 
@@ -600,6 +622,14 @@ void meas_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 				*((uint16_t*) uv_vector_at(&dev.meas.conf->rel_widths, i)),
 				*((uint16_t*) uv_vector_at(&dev.meas.conf->widths, i)));
 	}
+}
+
+
+void tiltonthumb_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv) {
+	if (args && argv[0].type == ARG_INTEGER) {
+		dev.tilt_conf.on_thumb = !!argv[0].number;
+	}
+	printf("Tilt on thumb: %u\n", dev.tilt_conf.on_thumb);
 }
 
 

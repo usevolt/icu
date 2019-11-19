@@ -37,11 +37,13 @@ void tilt_conf_reset(tilt_conf_st *this) {
 	this->out_conf.max_speed_a = 8;
 	this->out_conf.max_speed_b = 8;
 	this->float_enable = 1;
+	this->on_thumb = 0;
 }
 
 
 void tilt_init(tilt_st *this, tilt_conf_st *conf_ptr) {
 	input_init(&this->input);
+	input_init(&this->input2);
 	this->conf = conf_ptr;
 
 	uv_dual_output_init(&this->out, TILT_A, TILT_B, TILT_SENSE,
@@ -62,10 +64,12 @@ void tilt_init(tilt_st *this, tilt_conf_st *conf_ptr) {
 
 void tilt_step(tilt_st *this, uint16_t step_ms) {
 	input_step(&this->input, step_ms);
+	input_step(&this->input2, step_ms);
 
 //	uv_dual_output_set_invert(&this->out, this->conf->out_conf.assembly_invert);
 
-	int8_t req = input_get_request(&this->input, &this->conf->out_conf);
+	int8_t req = input_get_request((this->conf->on_thumb) ? &this->input2 : &this->input,
+			&this->conf->out_conf);
 
 	if (feed_get_request(&dev.feed)) {
 		req = 0;

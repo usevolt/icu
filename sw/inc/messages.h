@@ -25,6 +25,7 @@ typedef enum {
 	CMD_SET,
 	CMD_FEED,
 	CMD_MEAS,
+	CMD_TILTONTHUMB,
 	CMD_COUNT
 } gsm_commands_e;
 

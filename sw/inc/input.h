@@ -36,7 +36,6 @@
 #define INPUT_CLICK_VALUE				100
 
 typedef struct {
-	// input request
 	int8_t request;
 
 	int8_t last_request;

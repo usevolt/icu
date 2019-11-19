@@ -30,6 +30,7 @@
 typedef struct {
 	icu_conf_st out_conf;
 	uint8_t float_enable;
+	uint8_t on_thumb;
 } tilt_conf_st;
 
 /// @brief: Resets the non-volatile settings to defaults
@@ -39,6 +40,7 @@ void tilt_conf_reset(tilt_conf_st *this);
 typedef struct {
 	// input module from the CAN-bus
 	input_st input;
+	input_st input2;
 
 	uv_dual_output_st out;
 
