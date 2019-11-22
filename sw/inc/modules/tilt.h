@@ -51,7 +51,6 @@ typedef struct {
 	// manual request
 	uv_dual_output_dir_e dir_req;
 
-	uv_delay_st liftup_delay;
 	bool lifted_up;
 
 	icu_tilt_dir_e dir;

@@ -113,9 +113,12 @@ void step(void* me) {
 
 		// outputs are disables if FSB is not found, ignition key is not in ON state,
 		// or emergency switch is pressed
-		if (uv_canopen_heartbeat_producer_is_expired(FSB_NODE_ID) ||
-				uv_canopen_heartbeat_producer_is_expired(RKEYPAD_NODE_ID) ||
-				uv_canopen_heartbeat_producer_is_expired(LKEYPAD_NODE_ID) ||
+		if (
+//				these are disabled to prevent unintended disabling of outputs since
+//				not all CAN messages are received
+//				uv_canopen_heartbeat_producer_is_expired(FSB_NODE_ID) ||
+//				uv_canopen_heartbeat_producer_is_expired(RKEYPAD_NODE_ID) ||
+//				uv_canopen_heartbeat_producer_is_expired(LKEYPAD_NODE_ID) ||
 				(this->fsb.ignkey_state != FSB_IGNKEY_STATE_ON) ||
 				this->fsb.emcy ||
 				!this->fsb.seat_sw) {

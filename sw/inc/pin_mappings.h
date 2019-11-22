@@ -30,8 +30,8 @@
 #define TILT_A			P0_1
 #define TILT_B			P0_0
 #define TILT_SENSE		ADC1_8
-#define TILTFLOAT		P0_6
-#define TILTFLOAT_SENSE ADC1_5
+#define TILTFLOAT		P0_10
+#define TILTFLOAT_SENSE ADC0_1
 
 #define FEEDOPEN_A		P0_3
 #define FEEDOPEN_B		P0_2

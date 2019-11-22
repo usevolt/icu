@@ -77,6 +77,8 @@ void feed_init(feed_st *this, feed_conf_st *conf_ptr) {
 	this->len_to_target_mm = this->target_len_um;
 	this->state = ICU_FEED_STATE_OFF;
 	this->fl_index = 0;
+	this->parallel_on = false;
+	this->parallel_req = 0;
 
 	uv_output_init(&this->series_out, FEED_SENSE, FEED_SERIES,
 			VND5050_CURRENT_AMPL_UA, 5000, 8000, SOLENOID_AVG_COUNT,
@@ -133,6 +135,16 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 	}
 	else {
 		req = input_get_request(&this->input, &this->conf->out_conf);
+
+		// todo: make parallel feed request toggleable
+		if (req == 0) {
+			this->parallel_on = false;
+		}
+		else {
+			if (abs(this->parallel_req) > INT8_MAX / 2) {
+				this->parallel_on = true;
+			}
+		}
 
 		// feeding direction
 		// todo: implement logic for better direction algorithm
@@ -214,7 +226,7 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 		}
 
 		// parallel feeding
-		if (tilt_get_request(&dev.tilt) || allopen_get_request(&dev.allopen)) {
+		if (allopen_get_request(&dev.allopen)) {
 			series_feed = false;
 		}
 

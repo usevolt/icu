@@ -193,6 +193,13 @@ canopen_object_st obj_dict[] = {
 				.data_ptr = &this->feed_conf
 		},
 		{
+				.main_index = ICU_FEED_PARALLEL_REQ_INDEX,
+				.sub_index = ICU_FEED_PARALLEL_REQ_SUBINDEX,
+				.type = ICU_FEED_PARALLEL_REQ_TYPE,
+				.permissions = ICU_FEED_PARALLEL_REQ_PERMISSIONS,
+				.data_ptr = &this->feed.parallel_req
+		},
+		{
 				.main_index = ICU_FEED_CURRENT_INDEX,
 				.sub_index = ICU_FEED_CURRENT_SUBINDEX,
 				.type = ICU_FEED_CURRENT_TYPE,

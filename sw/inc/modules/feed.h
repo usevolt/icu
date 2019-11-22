@@ -69,6 +69,8 @@ typedef struct {
 	uv_delay_st feedopen_delay;
 	feed_feedopen_states_e feedopen_state;
 
+	int8_t parallel_req;
+	bool parallel_on;
 	int32_t len_um;
 	int32_t target_len_um;
 	int32_t len_to_target_mm;
