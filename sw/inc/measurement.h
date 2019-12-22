@@ -18,16 +18,14 @@
 
 /// @brief: Configuration structure which should be stored in non-volatile memory
 typedef struct {
-	uint16_t width_buffer[WIDTH_LOOK_UP_TABLE_SIZE];
-	uint16_t rel_width_buffer[WIDTH_LOOK_UP_TABLE_SIZE];
-	uv_vector_st widths;
-	uv_vector_st rel_widths;
 	struct {
 		uint16_t width1_min;
 		uint16_t width1_max;
 		uint16_t width2_min;
 		uint16_t width2_max;
 	} width_prefs;
+	uint16_t min_width_mm;
+	uint16_t max_width_mm;
 } measurement_conf_st;
 
 
@@ -36,11 +34,6 @@ typedef struct {
 
 	uv_moving_aver_st rel_width_aver;
 	int32_t width_calib_length;
-	// canopen calibration requests
-	uint16_t add_req;
-	uint8_t clear_req;
-	uint8_t calib_req;
-	uint8_t last_calib_req;
 	uint8_t calib_min_req;
 	uint8_t calib_max_req;
 

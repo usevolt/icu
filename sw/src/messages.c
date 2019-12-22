@@ -298,25 +298,18 @@ canopen_object_st obj_dict[] = {
 				.data_ptr = &this->meas.calib_max_req
 		},
 		{
-				.main_index = ICU_WIDTH_CALIB_REQ_INDEX,
-				.sub_index = ICU_WIDTH_CALIB_REQ_SUBINDEX,
-				.type = ICU_WIDTH_CALIB_REQ_TYPE,
-				.permissions = ICU_WIDTH_CALIB_REQ_PERMISSIONS,
-				.data_ptr = &this->meas.calib_req
+				.main_index = ICU_WIDTH_MAXMM_INDEX,
+				.sub_index = ICU_WIDTH_MAXMM_SUBINDEX,
+				.type = ICU_WIDTH_MAXMM_TYPE,
+				.permissions = ICU_WIDTH_MAXMM_PERMISSIONS,
+				.data_ptr = &this->meas_conf.max_width_mm
 		},
 		{
-				.main_index = ICU_WIDTH_CALIB_ADD_REQ_INDEX,
-				.sub_index = ICU_WIDTH_CALIB_ADD_REQ_SUBINDEX,
-				.type = ICU_WIDTH_CALIB_ADD_REQ_TYPE,
-				.permissions = ICU_WIDTH_CALIB_ADD_REQ_PERMISSIONS,
-				.data_ptr = &this->meas.add_req
-		},
-		{
-				.main_index = ICU_WIDTH_CALIB_CLEAR_REQ_INDEX,
-				.sub_index = ICU_WIDTH_CALIB_CLEAR_REQ_SUBINDEX,
-				.type = ICU_WIDTH_CALIB_CLEAR_REQ_TYPE,
-				.permissions = ICU_WIDTH_CALIB_CLEAR_REQ_PERMISSIONS,
-				.data_ptr = &this->meas.clear_req
+				.main_index = ICU_WIDTH_MINMM_INDEX,
+				.sub_index = ICU_WIDTH_MINMM_SUBINDEX,
+				.type = ICU_WIDTH_MINMM_TYPE,
+				.permissions = ICU_WIDTH_MINMM_PERMISSIONS,
+				.data_ptr = &this->meas_conf.min_width_mm
 		},
 		{
 				.main_index = ICU_VOL_DM3_INDEX,
@@ -471,6 +464,17 @@ void stat_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 			(int) this->feed.len_um,
 			(int) this->feed.target_len_um,
 			(int) this->feed_conf.len_calib);
+	printf("Meas: \n"
+			"	min angles: %i %i\n"
+			"	max angels: %i %i\n"
+			"	min width: %u mm\n"
+			"	max width: %u mm\n",
+			this->meas_conf.width_prefs.width1_min,
+			this->meas_conf.width_prefs.width2_min,
+			this->meas_conf.width_prefs.width1_max,
+			this->meas_conf.width_prefs.width2_max,
+			this->meas_conf.min_width_mm,
+			this->meas_conf.max_width_mm);
 }
 
 
@@ -595,39 +599,6 @@ void feed_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 void meas_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv) {
 	if (args && argv[0].type == ARG_STRING) {
 		char *s = argv[0].str;
-		if (strcmp(s, "del") == 0) {
-			if (args < 2) {
-				printf("Give index number of the width point to be deleted\n");
-			}
-			else {
-				uv_vector_remove(&dev.meas.conf->rel_widths, argv[1].number, 1);
-				uv_vector_remove(&dev.meas.conf->widths, argv[1].number, 1);
-			}
-		}
-		else if (strcmp(s, "add") == 0) {
-			if (args < 3) {
-				printf("Give relative width and actual width as integer parameters\n");
-			}
-			else {
-				uint8_t i = 0;
-				// find the right place to insert the new value
-				for (i = 0; i < uv_vector_size(&dev.meas.conf->rel_widths); i++) {
-					if (argv[1].number < *((uint16_t*) uv_vector_at(&dev.meas.conf->rel_widths, i))) {
-						break;
-					}
-				}
-				int16_t relw = argv[1].number;
-				int16_t w = argv[2].number;
-				uv_vector_insert(&dev.meas.conf->rel_widths, i, &relw);
-				uv_vector_insert(&dev.meas.conf->widths, i, &w);
-			}
-		}
-	}
-	for (uint32_t i = 0; i < uv_vector_size(&dev.meas.conf->widths); i++) {
-		printf("%u: %u, %u mm\n",
-				(unsigned int) i,
-				*((uint16_t*) uv_vector_at(&dev.meas.conf->rel_widths, i)),
-				*((uint16_t*) uv_vector_at(&dev.meas.conf->widths, i)));
 	}
 }
 
