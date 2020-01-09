@@ -53,6 +53,7 @@ void allopen_step(allopen_st *this, uint16_t step_ms) {
 	input_step(&this->input, step_ms);
 
 	int32_t req = input_get_request(&this->input, &this->conf->out_conf);
+	icu_conf_st *conf = &this->conf->out_conf;
 
 	// allopen disabled if feed is on, since it is used to control the series/parallel feeding
 	if (feed_get_request(&dev.feed)) {
@@ -87,7 +88,8 @@ void allopen_step(allopen_st *this, uint16_t step_ms) {
 		else if (this->tilt_state == ALLOPEN_TILT_STATE_UP) {
 			tilt_set_dir_req(&dev.tilt, (dev.tilt_conf.out_conf.assembly_invert) ?
 					DUAL_OUTPUT_NEG : DUAL_OUTPUT_POS);
-			req = dev.tilt_conf.out_conf.max_speed_a;
+			// use saw speed settings
+			conf = &dev.saw_conf.out_conf;
 			uv_delay_init(&this->tilt_delay, TILT_DELAY_MS);
 		}
 		else {
@@ -123,7 +125,8 @@ void allopen_step(allopen_st *this, uint16_t step_ms) {
 		else if (this->tilt_state == ALLOPEN_TILT_STATE_DOWN) {
 			tilt_set_dir_req(&dev.tilt, (dev.tilt_conf.out_conf.assembly_invert) ?
 					DUAL_OUTPUT_POS : DUAL_OUTPUT_NEG);
-			req = dev.tilt_conf.out_conf.max_speed_b;
+			// use saw speed settings
+			conf = &dev.saw_conf.out_conf;
 			uv_delay_init(&this->tilt_delay, TILT_DELAY_MS);
 		}
 		else {
@@ -144,8 +147,8 @@ void allopen_step(allopen_st *this, uint16_t step_ms) {
 		uv_delay_init(&this->tilt_delay, TILT_DELAY_MS);
 	}
 
-	remote_valve_set_request(&dev.impl1, this,
-			req, &this->conf->out_conf);
+
+	remote_valve_set_request(&dev.impl1, this, req, conf);
 
 }
 
