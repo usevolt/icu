@@ -448,9 +448,10 @@ void stat_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 			tilt_get_current(&this->tilt));
 	printf("Tilt dir: %s\n",
 			(tilt_get_dir(&dev.tilt) == ICU_TILT_DIR_UP) ? "UP" : "DOWN");
-	printf("Tilt float state: %u, current: %i\n",
+	printf("Tilt float state: %u, current: %i, enabled: %u\n",
 			uv_output_get_state(&dev.tilt.float_out),
-			tilt_get_float_current(&dev.tilt));
+			tilt_get_float_current(&dev.tilt),
+			dev.tilt_conf.float_enable);
 	printf("Saw: request: %i, current: %u In: %u\n",
 			saw_get_request(&this->saw),
 			saw_get_current(&this->saw),

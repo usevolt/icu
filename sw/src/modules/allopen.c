@@ -88,8 +88,8 @@ void allopen_step(allopen_st *this, uint16_t step_ms) {
 		else if (this->tilt_state == ALLOPEN_TILT_STATE_UP) {
 			tilt_set_dir_req(&dev.tilt, (dev.tilt_conf.out_conf.assembly_invert) ?
 					DUAL_OUTPUT_NEG : DUAL_OUTPUT_POS);
-			// use saw speed settings
-			conf = &dev.saw_conf.out_conf;
+			// use tilt speed settings
+			conf = &dev.tilt_conf.out_conf;
 			uv_delay_init(&this->tilt_delay, TILT_DELAY_MS);
 		}
 		else {
@@ -125,8 +125,8 @@ void allopen_step(allopen_st *this, uint16_t step_ms) {
 		else if (this->tilt_state == ALLOPEN_TILT_STATE_DOWN) {
 			tilt_set_dir_req(&dev.tilt, (dev.tilt_conf.out_conf.assembly_invert) ?
 					DUAL_OUTPUT_POS : DUAL_OUTPUT_NEG);
-			// use saw speed settings
-			conf = &dev.saw_conf.out_conf;
+			// use tilt speed settings
+			conf = &dev.tilt_conf.out_conf;
 			uv_delay_init(&this->tilt_delay, TILT_DELAY_MS);
 		}
 		else {
