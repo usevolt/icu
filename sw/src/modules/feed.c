@@ -43,12 +43,12 @@ static const icu_feed_fl_st fl_def[FEED_FL_COUNT] = {
 				.max_speed = INPUT_MAX_REQ
 		},
 		{
-				.dist_mm = 100,
-				.max_speed = INPUT_MAX_REQ / 10
+				.dist_mm = 300,
+				.max_speed = 75
 		},
 		{
 				.dist_mm = 50,
-				.max_speed = 5
+				.max_speed = 35
 		}
 };
 
@@ -79,6 +79,7 @@ void feed_init(feed_st *this, feed_conf_st *conf_ptr) {
 	this->fl_index = 0;
 	this->parallel_on = false;
 	this->parallel_req = 0;
+	this->last_input_dir = 0;
 
 	uv_output_init(&this->series_out, FEED_SENSE, FEED_SERIES,
 			VND5050_CURRENT_AMPL_UA, 5000, 8000, SOLENOID_AVG_COUNT,
@@ -94,10 +95,10 @@ void feed_init(feed_st *this, feed_conf_st *conf_ptr) {
 
 
 void feed_len_int(feed_st *this) {
-	if (input_get_request(&this->input, &this->conf->out_conf) > 0) {
+	if (this->last_input_dir > 0) {
 		this->len_um += this->conf->len_calib * 100;
 	}
-	else if (input_get_request(&this->input, &this->conf->out_conf) < 0) {
+	else if (this->last_input_dir < 0) {
 		this->len_um -= this->conf->len_calib * 100;
 	}
 	else {
@@ -136,6 +137,11 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 	else {
 		req = input_get_request(&this->input, &this->conf->out_conf);
 
+
+		if (req != 0) {
+			this->last_input_dir = req;
+		}
+
 		// todo: make parallel feed request toggleable
 		if (req == 0) {
 			this->parallel_on = false;
@@ -164,7 +170,6 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 		}
 
 
-
 		// feeding logic
 		// the most important thing: always stop if button feed request is not on
 		if (req == 0) {
@@ -175,6 +180,8 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 		}
 		else {
 			if (input_pressed(&this->input)) {
+				this->start_len_to_target_mm = this->len_to_target_mm;
+
 				// if the target length was already reached, or we are moving away from target,
 				// feeding starts in manual mode
 				if ((abs(this->len_to_target_mm) < this->conf->fl[FEED_FL_COUNT - 1].dist_mm) ||
@@ -186,6 +193,14 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 				// otherwise in normal mode
 				else {
 					this->state = ICU_FEED_STATE_ON;
+					this->fl_index = 0;
+				}
+			}
+			// stop if we went pass the target length
+			if (this->state == ICU_FEED_STATE_MANUAL ||
+					this->state == ICU_FEED_STATE_ON) {
+				if (this->start_len_to_target_mm * this->len_to_target_mm < 0) {
+					this->state = ICU_FEED_STATE_TARGET_UNREACHED;
 					this->fl_index = 0;
 				}
 			}

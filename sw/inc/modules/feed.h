@@ -74,10 +74,12 @@ typedef struct {
 	int32_t len_um;
 	int32_t target_len_um;
 	int32_t len_to_target_mm;
+	int32_t start_len_to_target_mm;
 	int32_t last_len_um;
 	feed_dir_e feed_dir;
 	// tells which fuzzy logic level is currently used
 	uint8_t fl_index;
+	int8_t last_input_dir;
 	icu_feed_states_e state;
 
 	feed_conf_st *conf;
