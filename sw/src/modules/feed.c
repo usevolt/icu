@@ -43,7 +43,7 @@ static const icu_feed_fl_st fl_def[FEED_FL_COUNT] = {
 				.max_speed = INPUT_MAX_REQ
 		},
 		{
-				.dist_mm = 300,
+				.dist_mm = 150,
 				.max_speed = 75
 		},
 		{
@@ -138,10 +138,6 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 		req = input_get_request(&this->input, &this->conf->out_conf);
 
 
-		if (req != 0) {
-			this->last_input_dir = req;
-		}
-
 		// todo: make parallel feed request toggleable
 		if (req == 0) {
 			this->parallel_on = false;
@@ -196,14 +192,6 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 					this->fl_index = 0;
 				}
 			}
-			// stop if we went pass the target length
-			if (this->state == ICU_FEED_STATE_MANUAL ||
-					this->state == ICU_FEED_STATE_ON) {
-				if (this->start_len_to_target_mm * this->len_to_target_mm < 0) {
-					this->state = ICU_FEED_STATE_TARGET_UNREACHED;
-					this->fl_index = 0;
-				}
-			}
 
 			if (this->state == ICU_FEED_STATE_ON) {
 				// check if it's time to increase the fuzzy logic level
@@ -224,15 +212,15 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 
 				}
 
-
 				// update request to match the required speed from fuzzy logic
-				req = (req < 0) ?
+				req = (this->len_to_target_mm < 0) ?
 						- this->conf->fl[this->fl_index].max_speed :
 						this->conf->fl[this->fl_index].max_speed;
 			}
 			// dont move when the target was either reached or lost
 			else if (this->state == ICU_FEED_STATE_TARGET_REACHED ||
-					this->state == ICU_FEED_STATE_TARGET_UNREACHED) {
+					this->state == ICU_FEED_STATE_TARGET_UNREACHED ||
+					this->state == ICU_FEED_STATE_OFF) {
 				req = 0;
 			}
 			else {
@@ -243,6 +231,10 @@ void feed_step(feed_st *this, uint16_t step_ms) {
 		// parallel feeding
 		if (allopen_get_request(&dev.allopen)) {
 			series_feed = false;
+		}
+
+		if (req != 0) {
+			this->last_input_dir = req;
 		}
 
 
