@@ -88,18 +88,24 @@ void feed_init(feed_st *this, feed_conf_st *conf_ptr) {
 	this->feedopen_state = FEED_FEEDOPEN_STATE_ON;
 	uv_delay_init(&this->feedopen_delay, this->conf->feedopen_on_time_ms);
 
-	uv_gpio_init_input(LEN_IN, PULL_UP_ENABLED);
-	uv_gpio_init_int(LEN_IN, INT_BOTH_EDGES);
+	uv_gpio_init_input(LEN1_IN, PULL_UP_ENABLED);
+	uv_gpio_init_int(LEN1_IN, INT_BOTH_EDGES);
+	uv_gpio_init_input(LEN2_IN, PULL_UP_ENABLED);
+	uv_gpio_init_int(LEN2_IN, INT_BOTH_EDGES);
 
 }
 
 
-void feed_len_int(feed_st *this) {
-	if (this->last_input_dir > 0) {
-		this->len_um += this->conf->len_calib * 100;
+void feed_len_int(feed_st *this, uv_gpios_e gpio) {
+	uint8_t len1 = !!uv_gpio_get(LEN1_IN),
+			len2 = !!uv_gpio_get(LEN2_IN);
+	if (gpio == LEN1_IN) {
+		this->len_um += this->conf->len_calib * ((len1 == len2) ? 100 : -100) *
+				(this->conf->out_conf.invert ? -1 : 1);
 	}
-	else if (this->last_input_dir < 0) {
-		this->len_um -= this->conf->len_calib * 100;
+	else if (gpio == LEN2_IN) {
+		this->len_um -= this->conf->len_calib * ((len1 == len2) ? 100 : -100) *
+				(this->conf->out_conf.invert ? -1 : 1);
 	}
 	else {
 

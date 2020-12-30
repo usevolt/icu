@@ -26,9 +26,7 @@ static bool initialized = false;
 
 
 void gpio_callback(uv_gpios_e gpio) {
-	if (gpio == LEN_IN) {
-		feed_len_int(&this->feed);
-	}
+	feed_len_int(&this->feed, gpio);
 }
 
 

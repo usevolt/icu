@@ -97,7 +97,7 @@ void feed_step(feed_st *this, uint16_t step_ms);
 
 /// @brief: Interrupt function which should be called when length
 /// sensor gives a pulse
-void feed_len_int(feed_st *this);
+void feed_len_int(feed_st *this, uv_gpios_e gpio);
 
 
 void feed_clear_len(feed_st *this);

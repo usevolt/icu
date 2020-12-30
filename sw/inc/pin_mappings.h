@@ -16,8 +16,8 @@
 #define WIDTH2_AIN		ADC0_4
 
 #define SAW_IN			P0_30
-#define LEN_IN			P0_28
-
+#define LEN1_IN			P0_28
+#define LEN2_IN			P0_27
 
 #define BLADEOPEN_A		P0_24
 #define BLADEOPEN_B		P1_8
