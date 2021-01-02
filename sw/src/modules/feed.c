@@ -96,15 +96,16 @@ void feed_init(feed_st *this, feed_conf_st *conf_ptr) {
 }
 
 
+#define LEN_CALIB	3
 void feed_len_int(feed_st *this, uv_gpios_e gpio) {
 	uint8_t len1 = !!uv_gpio_get(LEN1_IN),
 			len2 = !!uv_gpio_get(LEN2_IN);
 	if (gpio == LEN1_IN) {
-		this->len_um += this->conf->len_calib * ((len1 == len2) ? 100 : -100) *
+		this->len_um += this->conf->len_calib * ((len1 == len2) ? LEN_CALIB : -LEN_CALIB) *
 				(this->conf->out_conf.invert ? -1 : 1);
 	}
 	else if (gpio == LEN2_IN) {
-		this->len_um -= this->conf->len_calib * ((len1 == len2) ? 100 : -100) *
+		this->len_um -= this->conf->len_calib * ((len1 == len2) ? LEN_CALIB : -LEN_CALIB) *
 				(this->conf->out_conf.invert ? -1 : 1);
 	}
 	else {
