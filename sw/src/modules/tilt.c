@@ -74,31 +74,31 @@ void tilt_step(tilt_st *this, uint16_t step_ms) {
 	}
 
 	// float logic
-	if (saw_returned(&dev.saw) &&
-			this->lifted_up) {
+//	if (saw_returned(&dev.saw) &&
+//			this->lifted_up) {
+//		if (this->conf->float_enable) {
+//			uv_output_set_state(&this->float_out, OUTPUT_STATE_ON);
+//		}
+//		this->lifted_up = false;
+//	}
+//	else {
+	int16_t r = dir *
+			((this->conf->out_conf.assembly_invert) ? -1 : 1);
+	if (r > 0) {
+		this->dir = ICU_TILT_DIR_UP;
+		uv_output_set_state(&this->float_out, OUTPUT_STATE_OFF);
+		this->lifted_up = true;
+	}
+	else if (r < 0) {
+		this->dir = ICU_TILT_DIR_DOWN;
 		if (this->conf->float_enable) {
 			uv_output_set_state(&this->float_out, OUTPUT_STATE_ON);
 		}
-		this->lifted_up = false;
 	}
 	else {
-		int16_t r = dir *
-				((this->conf->out_conf.assembly_invert) ? -1 : 1);
-		if (r > 0) {
-			this->dir = ICU_TILT_DIR_UP;
-			uv_output_set_state(&this->float_out, OUTPUT_STATE_OFF);
-			this->lifted_up = true;
-		}
-		else if (r < 0) {
-			this->dir = ICU_TILT_DIR_DOWN;
-			if (this->conf->float_enable) {
-				uv_output_set_state(&this->float_out, OUTPUT_STATE_OFF);
-			}
-		}
-		else {
 
-		}
 	}
+//	}
 
 	uv_dual_output_set(&this->out, dir);
 	uv_dual_output_step(&this->out, step_ms);

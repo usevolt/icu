@@ -25,7 +25,7 @@
 #include "pin_mappings.h"
 
 
-#define TILT_DELAY_MS		500
+#define TILT_DELAY_MS		2000
 #define TILT_PRESS_LIMIT	150
 
 
