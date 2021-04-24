@@ -75,6 +75,7 @@ void feed_init(feed_st *this, feed_conf_st *conf_ptr) {
 	this->len_to_target_mm = this->target_len_um;
 	this->state = ICU_FEED_STATE_OFF;
 	this->fl_index = 0;
+	this->wheel_last_dir = 0;
 
 	uv_output_init(&this->series_out, FEED_SENSE, FEED_SERIES,
 			VND5050_CURRENT_AMPL_UA, 5000, 8000, SOLENOID_AVG_COUNT,
@@ -90,12 +91,15 @@ void feed_init(feed_st *this, feed_conf_st *conf_ptr) {
 
 
 void feed_len_int(feed_st *this) {
-	if (input_get_request(&this->input, &this->conf->out_conf) *
-			((this->conf->out_conf.assembly_invert) ? -1 : 1) > 0) {
+	int8_t req = input_get_request(&this->input, &this->conf->out_conf) *
+			((this->conf->out_conf.assembly_invert) ? -1 : 1);
+	if (req != 0) {
+		this->wheel_last_dir = req;
+	}
+	if (this->wheel_last_dir > 0) {
 		this->len_um += this->conf->len_calib * 100;
 	}
-	else if (input_get_request(&this->input, &this->conf->out_conf) *
-			((this->conf->out_conf.assembly_invert) ? -1 : 1) < 0) {
+	else if (this->wheel_last_dir < 0) {
 		this->len_um -= this->conf->len_calib * 100;
 	}
 	else {

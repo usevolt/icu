@@ -1,0 +1,20 @@
+{
+	"DEV": "ICU",
+	
+	"NODEID": 0xA,
+
+	"EMCY": [
+	],
+	
+	"DEFINES": [
+	],
+	
+	
+	"OBJ_DICT": [
+	],
+	"RXPDO": [
+	],
+	"TXPDO": [
+	]
+	
+}
