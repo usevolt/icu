@@ -69,7 +69,7 @@ typedef struct {
 	uv_gpios_e gpiob;
 } out_st;
 
-out_st outs[7];
+extern out_st outs[7];
 
 
 #endif /* UW_MB_SRC_PIN_MAPPINGS_H_ */

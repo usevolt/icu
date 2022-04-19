@@ -143,6 +143,13 @@ canopen_object_st obj_dict[] = {
 				.data_ptr = &dev.impl2.req_ma
 		},
 		{
+				.main_index = ICU_FORCEPUMP_REQ_INDEX,
+				.sub_index = ICU_FORCEPUMP_REQ_SUBINDEX,
+				.type = ICU_FORCEPUMP_REQ_TYPE,
+				.permissions = ICU_FORCEPUMP_REQ_PERMISSIONS,
+				.data_ptr = &dev.forcepump_req
+		},
+		{
 				.main_index = ICU_TARGET_LEN_UM_INDEX,
 				.sub_index = ICU_TARGET_LEN_UM_SUBINDEX,
 				.type = ICU_TARGET_LEN_UM_TYPE,
@@ -505,6 +512,9 @@ void feed_callb(void* me, unsigned int cmd, unsigned int args, argument_st *argv
 			}
 			else if (strcmp(argv[0].str, "parallel feed") == 0) {
 				this->feed_parallel_feed_ms = argv[1].number;
+			}
+			else if (strcmp(argv[0].str, "forcefeed") == 0) {
+				this->force_feed = !!argv[1].number;
 			}
 			else {
 				printf("Unknown argument '%s'\n", argv[0].str);

@@ -124,6 +124,8 @@ typedef struct _dev_st {
 	int16_t all_open_blade_open_time_ms;
 	uint16_t all_open_pressure_limit;
 
+	int16_t forcepump_req;
+
 
 	/// how far away fine tuning is started from the target length
 	uint32_t feed_finetune_start_dist_um;
@@ -138,6 +140,8 @@ typedef struct _dev_st {
 	uint16_t feed_parallel_wait_ms;
 	// how long parallel feeding is on
 	uint16_t feed_parallel_feed_ms;
+	// forces feed to work when saw state is unknown
+	uint8_t force_feed;
 
 	measurement_st meas;
 

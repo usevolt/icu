@@ -119,11 +119,15 @@ void init(dev_st* me) {
 	uv_dual_output_set_invert(&this->out[BLADES_OPEN_OUT], true);
 	uv_dual_output_set_invert(&this->out[FEED_OPEN_OUT], true);
 
+	this->forcepump_req = 0;
+
 	this->len_um = 0;
 	this->target_length_um = 3000000;
 	this->target_length_reached = 0;
 	this->saw_abs_pos = 0;
 	this->saw_position_unknown = 1;
+
+	this->force_feed = 0;
 
 	this->width_mm = 0;
 	this->width_pulses = 0;
@@ -494,6 +498,10 @@ static void feed(void *me) {
 
 	// after start up feed command is disabled until saw position is known
 	while (this->saw_position_unknown) {
+		if (this->force_feed) {
+			printf("Feed enabled although saw position is unknown\n");
+			break;
+		}
 		uv_rtos_task_delay(step_ms);
 	}
 	uv_rtos_task_delay(1000);
@@ -513,11 +521,13 @@ static void feed(void *me) {
 			uv_rtos_task_delay(step_ms);
 		}
 
+		remote_valve_st *impl = &this->impl2;
 		if (command_get_req(&this->feed)) {
 			if (feed.state == FEED_STATE_NORMAL) {
 
-				remote_valve_set_request(&this->impl2, &this->feed,
+				remote_valve_set_request(impl, &this->feed,
 						command_get_current_ma(&this->feed));
+				this->forcepump_req = 1;
 
 				// parallel feeding
 				bool parallel = feed_get_parallel_req(&feed, step_ms);
@@ -526,8 +536,9 @@ static void feed(void *me) {
 
 				// wait until we are close to target length, then change to fine tuning
 				if (feed_finetune_distance_reached(&feed)) {
-					remote_valve_set_request(&this->impl2, &this->feed, 0);
+					remote_valve_set_request(impl, &this->feed, 0);
 					uv_rtos_task_delay(this->feed_finetune_wait_ms);
+					this->forcepump_req = 1;
 					feed_set_state(&feed, FEED_STATE_FINETUNE);
 				}
 			}
@@ -535,14 +546,16 @@ static void feed(void *me) {
 				// when finetuning, parallel feeding is always on
 				uv_dual_output_set_dir(&this->out[FEED_SAW_OUT], FEED_SERIES_DIR);
 				// feed towards the target with reduced speed
-				remote_valve_set_request(&this->impl2, &this->feed,
+				remote_valve_set_request(impl, &this->feed,
 						(this->target_length_um > this->len_um) ?
 								(command_get_current_ma(&this->feed) / 8) :
 								-(command_get_current_ma(&this->feed) / 8));
+				this->forcepump_req = 1;
 				// time to finetune
 				if (feed_target_reached(&feed)) {
 					while (true) {
-						remote_valve_set_request(&this->impl2, &this->feed, 0);
+						remote_valve_set_request(impl, &this->feed, 0);
+						this->forcepump_req = 0;
 
 						uv_rtos_task_delay(this->feed_finetune_wait_ms);
 
@@ -551,10 +564,11 @@ static void feed(void *me) {
 							break;
 						}
 						else {
-							remote_valve_set_request(&this->impl2, &this->feed,
+							remote_valve_set_request(impl, &this->feed,
 									(this->target_length_um > this->len_um) ?
 											(command_get_current_ma(&this->feed) / 8) :
 											-(command_get_current_ma(&this->feed) / 8));
+							this->forcepump_req = 1;
 							uv_rtos_task_delay(this->feed_finetune_feed_ms);
 						}
 					}
@@ -576,7 +590,8 @@ static void feed(void *me) {
 			feed_set_state(&feed, FEED_STATE_NORMAL);
 			uv_dual_output_set_dir(&this->out[FEED_SAW_OUT], DUAL_OUTPUT_OFF);
 
-			remote_valve_set_request(&this->impl2, &this->feed, 0);
+			remote_valve_set_request(impl, &this->feed, 0);
+			this->forcepump_req = 0;
 		}
 
 		uv_rtos_task_delay(step_ms);
@@ -607,7 +622,7 @@ static void saw(void *me) {
 			if (command_get_req(&this->saw) < 0) {
 				uv_dual_output_set_dir(&this->out[FEED_SAW_OUT], SAW_DIR);
 				remote_valve_set_request(&this->impl2, &this->saw,
-						command_get_current_ma(&this->saw));
+						-command_get_current_ma(&this->saw));
 
 				uv_rtos_task_delay(SAW_ACC_DELAY_MS);
 			}
@@ -635,7 +650,7 @@ static void saw(void *me) {
 			uv_dual_output_set_dir(&this->out[FEED_SAW_OUT], SAW_DIR);
 
 			remote_valve_set_request(&this->impl2, &this->saw,
-					command_get_current_ma(&this->saw));
+					-command_get_current_ma(&this->saw));
 
 			uv_dual_output_set_dir(&this->out[SAW_MOVE_OUT], SAW_OUT_DIR);
 			remote_valve_set_request(&this->impl1, &this->saw, saw_out_speed);
